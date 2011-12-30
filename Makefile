@@ -1,12 +1,12 @@
 CFLAGS=`sdl-config --cflags`
-#-Wall -Wextra
+# -Wall -Wextra
 #GCC ONLY: -ansi -pedantic
-CC=tcc
+CC=gcc
 
 all: newgame tags
 
 newgame: newgame.o
-	$(CC) `sdl-config --libs` -o $@ $^ 
+	$(CC) -o $@ $^ `sdl-config --libs`
 
 tags: newgame.c
 	ctags $^

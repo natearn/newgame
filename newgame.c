@@ -53,19 +53,22 @@ int main(void) {
 	SDL_WM_SetCaption( "Spong", NULL );
 
 	/* register a timer event */
-	if( !(timerId = SDL_AddTimer( 1000, (SDL_NewTimerCallback)Redraw(1000,NULL), NULL )))
+#if 0
+	if( !(timerId = SDL_AddTimer( 1000, (SDL_NewTimerCallback)Redraw(1000,screen), NULL )))
 	{
 		fprintf(stderr,"failure to add timer\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
 			case SDL_KEYDOWN:
 				if( event.key.keysym.sym == SDLK_ESCAPE ) {
 					fprintf(stderr,"SDLK_ESCAPE\n");
+					goto done;
 				}
-				goto done;
+				break;
 			case SDL_QUIT:
 				fprintf(stderr,"SDL_QUIT\n");
 				goto done;
