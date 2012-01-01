@@ -1,0 +1,4 @@
+- Load the sprite sheet as a DisplayObject
+- Display a single sprite from the sprite sheet (figure out the dimensions of a sprite)
+- add some keyboard events
+- bind sprite changes to keyboard events
