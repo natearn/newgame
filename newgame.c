@@ -6,63 +6,81 @@
 /* custom events */
 #define REDRAW_EVENT 1
 
+/* encapsulate "object" data into a struct */
+/* NOTE: this should be all that is necessary for displaying an animated sprite */
 typedef struct {
 	SDL_Surface *surface;     /* surface data */
-	SDL_Rect *clip;           /* the segment of the surface to use */
+	SDL_Rect *clip;           /* the segment of the surface to display */
 	SDL_Rect *posn;           /* the position of the used segment */
 } DisplayObject;
 
-/* TODO: add colour key for transparent sections */
-DisplayObject *CreateDisplayObject( int width, int height, int bpp ) {
+/* CreateDisplayObject
+	desc: allocate a DisplayObject and optionally assign SDL_Surface, clip, posn
+*/
+DisplayObject *CreateDisplayObject( SDL_Surface *surf, SDL_Rect *c, SDL_Rect *p ) {
 	DisplayObject *ret = NULL;
 	if( !(ret = malloc(sizeof(*ret))) ) {
-		fprintf(stderr,"CreateDisplayObject: out of memory\n");
-		goto object_error;
+		fprintf(stderr,"CreateDisplayObject: malloc failed (probably insufficient memory)\n");
+		return NULL;
 	}
-	if( !(ret->surface = SDL_CreateRGBSurface( SDL_HWSURFACE, width, height, bpp, 0, 0, 0, 0 )) ) {
-		fprintf(stderr, "CreateDisplayObject: CreateRGBSurface failed: %s\n", SDL_GetError());
-		goto surface_error;
-	}
-	if( !(ret->clip = malloc(sizeof(*(ret->clip)))) ) {
-		fprintf(stderr,"CreateDisplayObject: out of memory\n");
-		goto clip_error;
-	}
-	ret->clip->x = ret->clip->y = 0;
-	ret->clip->w = width;
-	ret->clip->h = height;
-	if( !(ret->posn = malloc(sizeof(*(ret->posn)))) ) {
-		fprintf(stderr,"CreateDisplayObject: out of memory\n");
-		goto posn_error;
-	}
-	ret->posn->x = ret->posn->y = ret->posn->w = ret->posn->h = 0;
-	return ret;
-posn_error:
-	free( ret->clip );
-clip_error:
-	SDL_FreeSurface( ret->surface );
-surface_error:
-	free( ret );
-object_error:
-	return NULL;
+	ret->surface = surf;
+	ret->clip = c;
+	ret->posn = p;
 }
 
+/* FreeDisplayObject
+	desc: free an unused DisplayObject
+	args: a pointer to a DisplayObject on the heap
+	ret:  none
+	pre:  assumes obj is a valid pointer to heap memory
+	post: obj is NULL
+	
+*/
 void FreeDisplayObject( DisplayObject* obj ) {
-	free( obj->posn );
-	free( obj->clip );
-	SDL_FreeSurface( obj->surface );
+	assert( obj );
+	if( obj->posn ) free( obj->posn );
+	if( obj->clip ) free( obj->clip );
+	if( obj->surface ) SDL_FreeSurface( obj->surface );
 	free( obj );
 	obj = NULL; /* this is probably redundant */
 }
 
-DisplayObject *LoadSprite( const char* file, Uint32 colour, SDL_Rect box ) {
+#if 0
+/* XXX: assuming file type and sprite spacing for sample */
+DisplayObject *LoadSpriteSheet( const char* file, Uint32 colour, SDL_Rect box ) {
 	SDL_Surface *spritesheet = NULL;
 	DisplayObject *obj = NULL;
-	// load the file
-	// make it display-ready
-	// set transparency key
-	// set box
+	SDL_Rect *clip = NULL;
+	/* load the file */
+	if( !(spritesheet = SDL_LoadBMP( file )) ) {
+		fprintf(stderr,"BMPtoDisplayObject: LoadBMP failed: %s\n",SDL_GetError());
+		return NULL;
+	}
+	/* set transparency key */
+	if( SDL_SetColorKey( spritesheet, SDL_SRCOLORKEY | SDL_RLEACCEL, colour )) {
+		fprintf(stderr,"BMPtoDisplayObject: SetColorKey failed: %s\n",SDL_GetError());
+		SDL_FreeSurface( spritesheet );
+		return NULL;
+	}
+	/* make it display-ready */
+	/* set box */
+	clip = malloc(sizeof(*clip);
+	clip->x = box.x;
+	clip->y = box.y;
+	clip->h = box.h;
+	clip->w = box.w;
+	/* assign into display object */
+	obj = CreateDisplayObject( spritesheet, clip, NULL );
 }
+#endif
 
+/* PushRedraw
+	desc: pushes a SDL_USEREVENT onto the event queue to request redrawing the screen
+	args: standard SDL timer callback arguments. interval is used to repeat the timer
+	ret:  time (ms) to next call
+	pre:  none (maybe SDL_Init()?)
+	post: event pushed onto event queue
+*/
 Uint32 PushRedraw( Uint32 interval, void *param ) {
 		SDL_Event event;
 		(void)param;
@@ -80,8 +98,8 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 	desc: create foreground and background surfaces, blit them to the
 	      screen, and then flip the screen.
 	args: the video surface (screen)
-	ret : 0 on success, -1 on failure
-	pre : screen points to the video surface
+	ret:  0 on success, -1 on failure
+	pre:  screen points to the video surface
 	post: screen will be updated
 */
 /* TODO: include other surfaces for drawing, rather than making them in here */
@@ -154,7 +172,7 @@ int main( int argc , char *argv[] ) {
 	}
 
 	/* set the window caption */
-	SDL_WM_SetCaption( "Spong", NULL );
+	SDL_WM_SetCaption( "newgame", NULL );
 
 	/* register a timer event */
 	if( !(timerId = SDL_AddTimer( 1000/60, PushRedraw, NULL )) ) {
@@ -162,6 +180,7 @@ int main( int argc , char *argv[] ) {
 		exit(EXIT_FAILURE);
 	}
 
+	/* event handler */
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
 			case SDL_USEREVENT:
