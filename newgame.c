@@ -45,34 +45,46 @@ void FreeDisplayObject( DisplayObject* obj ) {
 	obj = NULL; /* this is probably redundant */
 }
 
-#if 0
 /* XXX: assuming file type and sprite spacing for sample */
 DisplayObject *LoadSpriteSheet( const char* file, Uint32 colour, SDL_Rect box ) {
-	SDL_Surface *spritesheet = NULL;
+	SDL_Surface *sprites = NULL;
+	SDL_Surface *format = NULL;
 	DisplayObject *obj = NULL;
 	SDL_Rect *clip = NULL;
 	/* load the file */
-	if( !(spritesheet = SDL_LoadBMP( file )) ) {
-		fprintf(stderr,"BMPtoDisplayObject: LoadBMP failed: %s\n",SDL_GetError());
-		return NULL;
+	if( !(sprites = SDL_LoadBMP( file )) ) {
+		goto lss_error;
 	}
 	/* set transparency key */
-	if( SDL_SetColorKey( spritesheet, SDL_SRCOLORKEY | SDL_RLEACCEL, colour )) {
-		fprintf(stderr,"BMPtoDisplayObject: SetColorKey failed: %s\n",SDL_GetError());
-		SDL_FreeSurface( spritesheet );
-		return NULL;
+	if( SDL_SetColorKey( sprites, SDL_SRCCOLORKEY | SDL_RLEACCEL, colour )) {
+		goto post_sprites;
 	}
 	/* make it display-ready */
+	if( SDL_DisplayFormat( sprites )) {
+		goto post_sprites;
+	}
 	/* set box */
-	clip = malloc(sizeof(*clip);
+	if(!(clip = malloc(sizeof(*clip)))) {
+		goto post_sprites;
+	}
 	clip->x = box.x;
 	clip->y = box.y;
 	clip->h = box.h;
 	clip->w = box.w;
 	/* assign into display object */
-	obj = CreateDisplayObject( spritesheet, clip, NULL );
+	if( !(obj = CreateDisplayObject( format, clip, NULL ))) {
+		goto post_format;
+	}
+	SDL_FreeSurface( sprites );
+	return obj; /* success */
+post_format:
+	SDL_FreeSurface( format );
+post_sprites:
+	SDL_FreeSurface( sprites );
+lss_error:
+	fprintf(stderr,"BMPtoDisplayObject: %s\n",SDL_GetError());
+	return NULL; /* failure */
 }
-#endif
 
 /* PushRedraw
 	desc: pushes a SDL_USEREVENT onto the event queue to request redrawing the screen
