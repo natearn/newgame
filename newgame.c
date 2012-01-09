@@ -1,30 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include "animation.h"
 
 /* custom events */
 #define REDRAW_EVENT 1
 
-/* encapsulate "object" data into a struct */
-/* NOTE: this should be all that is necessary for displaying an animated sprite */
+/* stack order */
+#define AFTER_STACK  1
+#define BEFORE_STACK -1
+
+/* DisplayObject */
 typedef struct {
-	SDL_Surface *surface;     /* surface data */
-	SDL_Rect *clip;           /* the segment of the surface to display */
-	SDL_Rect *posn;           /* the position of the used segment */
+	SDL_Surface *surface;    /* surface data */
+	Animation *anim;         /* size and position of the first sprite on the sheet */
+	SDL_Rect *posn;          /* absolute map position of the object. If this is not on the screen, it shouldn't be rendered */
 } DisplayObject;
 
 /* CreateDisplayObject
 	desc: allocate a DisplayObject and optionally assign SDL_Surface, clip, posn
 */
-DisplayObject *CreateDisplayObject( SDL_Surface *surf, SDL_Rect *c, SDL_Rect *p ) {
+DisplayObject *CreateDisplayObject( SDL_Surface *s, Animation *a, SDL_Rect *p ) {
 	DisplayObject *ret = NULL;
 	if( !(ret = malloc(sizeof(*ret))) ) {
 		fprintf(stderr,"CreateDisplayObject: malloc failed (probably insufficient memory)\n");
 		return NULL;
 	}
-	ret->surface = surf;
-	ret->clip = c;
+	ret->surface = s;
+	ret->anim = a;
 	ret->posn = p;
 }
 
@@ -39,20 +44,19 @@ DisplayObject *CreateDisplayObject( SDL_Surface *surf, SDL_Rect *c, SDL_Rect *p 
 void FreeDisplayObject( DisplayObject* obj ) {
 	assert( obj );
 	if( obj->posn ) free( obj->posn );
-	if( obj->clip ) free( obj->clip );
+	if( obj->anim ) FreeAnimation( obj->anim );
 	if( obj->surface ) SDL_FreeSurface( obj->surface );
 	free( obj );
 	obj = NULL; /* this is probably redundant */
 }
 
 /* XXX: assuming file type and sprite spacing for sample */
-DisplayObject *LoadSpriteSheet( const char* file, Uint32 colour, SDL_Rect box ) {
+DisplayObject *LoadSpriteSheet( const char* file, Uint32 colour ) {
 	SDL_Surface *sprites = NULL;
 	SDL_Surface *format = NULL;
 	DisplayObject *obj = NULL;
-	SDL_Rect *clip = NULL;
 	/* load the file */
-	if( !(sprites = SDL_LoadBMP( file )) ) {
+	if( !(sprites = IMG_Load( file ))) {
 		goto lss_error;
 	}
 	/* set transparency key */
@@ -60,21 +64,15 @@ DisplayObject *LoadSpriteSheet( const char* file, Uint32 colour, SDL_Rect box ) 
 		goto post_sprites;
 	}
 	/* make it display-ready */
-	if( SDL_DisplayFormat( sprites )) {
+	if( !(format = SDL_DisplayFormat( sprites ))) {
 		goto post_sprites;
 	}
-	/* set box */
-	if(!(clip = malloc(sizeof(*clip)))) {
-		goto post_sprites;
-	}
-	clip->x = box.x;
-	clip->y = box.y;
-	clip->h = box.h;
-	clip->w = box.w;
 	/* assign into display object */
-	if( !(obj = CreateDisplayObject( format, clip, NULL ))) {
+	if( !(obj = CreateDisplayObject( format, NULL, NULL ))) {
 		goto post_format;
 	}
+	assert( !obj->anim );
+	assert( !obj->posn );
 	SDL_FreeSurface( sprites );
 	return obj; /* success */
 post_format:
@@ -82,7 +80,7 @@ post_format:
 post_sprites:
 	SDL_FreeSurface( sprites );
 lss_error:
-	fprintf(stderr,"BMPtoDisplayObject: %s\n",SDL_GetError());
+	fprintf(stderr,"BMPtoDisplayObject failed: %s\n",SDL_GetError());
 	return NULL; /* failure */
 }
 
@@ -115,48 +113,34 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 	post: screen will be updated
 */
 /* TODO: include other surfaces for drawing, rather than making them in here */
-int Redraw( SDL_Surface *screen ) {
+int Redraw( SDL_Surface *screen, DisplayObject *thing ) {
 	SDL_Surface *background = NULL;
-	SDL_Surface *foreground = NULL;
-	static SDL_Rect redposn = {.x=0,.y=0,.w=1,.h=1};
 	/* create background */
 	if( !( background = SDL_CreateRGBSurface( SDL_HWSURFACE, 640, 480, 32, 0, 0, 0, 0 ))) {
 		fprintf(stderr, "Redraw: CreateRGBSurface failed: %s\n", SDL_GetError());
 		return -1;
 	}
-	/* create foreground */
-	if( !( foreground = SDL_CreateRGBSurface( SDL_HWSURFACE, 64, 48, 32, 0, 0, 0, 0 ))) {
-		fprintf(stderr, "Redraw: CreateRGBSurface failed: %s\n", SDL_GetError());
-		return -1;
-	}
 	/* fill the background */
 	if( SDL_FillRect( background, NULL, 0x0000ff00 )) {
-		fprintf(stderr,"Redraw: error from SDL_FillRect( background, NULL, 0x0000ff00 )\n");
-		return -1;
-	}
-	/* fill foreground */
-	if( SDL_FillRect( foreground, NULL, 0x00ff0000 )) {
-		fprintf(stderr,"Redraw: error from SDL_FillRect( foreground, NULL, 0x00ff0000 )\n");
+		fprintf(stderr,"Redraw: error from SDL_FillRect( background, NULL, 0x000000ff )\n");
 		return -1;
 	}
 	/* blit background */
-	if( SDL_BlitSurface( background, NULL, screen, NULL ) ) {
+	if( SDL_BlitSurface( background, NULL, screen, NULL )) {
 		fprintf(stderr,"Redraw: error from SDL_BlitSurface( background, NULL, screen, NULL )\n");
 		return -1;
 	}
-	/* blit forground */
-	if( SDL_BlitSurface( foreground, NULL, screen, &redposn ) ) {
-		fprintf(stderr, "Redraw: error from SDL_BlitSurface( foreground, NULL, screen, NULL )\n");
+	/* blit thing */
+	if( SDL_BlitSurface( thing->surface, &thing->anim->frames[thing->anim->index], screen, thing->posn )) {
+		fprintf(stderr, "Redraw: error from SDL_BlitSurface( thing->surface, thing->anim->frames[thing->anim->index], screen, thing->posn )");
 		return -1;
 	}
-	redposn.x += 1;
 	/* flip screen */
 	if( SDL_Flip(screen) ) {
 		fprintf(stderr,"Redraw: error from SDL_Flip()\n");
 		return -1;
 	}
 	SDL_FreeSurface( background );
-	SDL_FreeSurface( foreground );
 	return 0;
 }
 
@@ -169,13 +153,18 @@ int main( int argc , char *argv[] ) {
 
 	/* init SDL modules. TODO: init only the modules that I use */
 	SDL_Init(SDL_INIT_EVERYTHING);
+	/* init SDL_image formats */
+	IMG_Init(IMG_INIT_PNG); /* XXX: don't need JPG,PNG,TIF yet */
 
-	/* register SDL_Quit */
+	/* register SDL_Quit and IMG_Quit */
 	if( atexit(SDL_Quit) ) {
 		fprintf(stderr,"Unable to register SDL_Quit atexit\n");
 	}
+	if( atexit(IMG_Quit) ) {
+		fprintf(stderr,"Unable to register IMG_Quit atexit\n");
+	}
 
-	/* window */
+	/* window TODO: flags should be configurable */
 	if( !(screen = SDL_SetVideoMode( 640, 480, 32, SDL_HWSURFACE |
 	                                               SDL_DOUBLEBUF |
 	                                               SDL_ANYFORMAT ))) {
@@ -186,12 +175,29 @@ int main( int argc , char *argv[] ) {
 	/* set the window caption */
 	SDL_WM_SetCaption( "newgame", NULL );
 
-	/* register a timer event */
+	/* register redraw timer event */
 	if( !(timerId = SDL_AddTimer( 1000/60, PushRedraw, NULL )) ) {
 		fprintf(stderr,"failure to add timer\n");
 		exit(EXIT_FAILURE);
 	}
 
+/* SAMPLE START (no error checking) */
+	DisplayObject *sam = LoadSpriteSheet( "samurai_FF00FF.png", 0x00ff00ff );
+	SDL_Rect *frames = malloc(sizeof(*frames));
+	frames[0].x = 0;
+	frames[0].y = 0;
+	frames[0].h = 64;
+	frames[0].w = 32;
+	Animation *sam_anim = CreateAnimation( frames, 1 );
+	sam->anim = sam_anim;
+	sam->posn = malloc(sizeof(*(sam->posn)));
+	sam->posn->x = 100;
+	sam->posn->y = 100;
+	sam->posn->w = 1;
+	sam->posn->h = 1;
+/* SAMPLE END */
+
+/* TODO: as this becomes more complicated, should split parts into separate routines */
 	/* event handler */
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -199,7 +205,7 @@ int main( int argc , char *argv[] ) {
 				switch( event.user.code ) {
 					case REDRAW_EVENT: 
 						/* fprintf(stderr,"REDRAW_EVENT\n"); */
-						if( Redraw( screen ) ) {
+						if( Redraw( screen, sam ) ) {
 							exit(EXIT_FAILURE);
 						}
 						break;
@@ -217,6 +223,7 @@ int main( int argc , char *argv[] ) {
 		}
 	}
 done:
+	IMG_Quit();
 	SDL_Quit();
 	return 0;
 }

@@ -5,10 +5,10 @@ CC=gcc
 
 all: newgame tags
 
-newgame: newgame.o
-	$(CC) -o $@ $^ `sdl-config --libs`
+newgame: animation.o newgame.o
+	$(CC) -o $@ $^ `sdl-config --libs` -lSDL_image
 
-tags: newgame.c
+tags: *.[hc]
 	ctags $^
 
 clean:
