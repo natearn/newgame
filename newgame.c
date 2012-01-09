@@ -84,6 +84,21 @@ lss_error:
 	return NULL; /* failure */
 }
 
+int DrawDisplayObject( DisplayObject *obj, SDL_Surface *surf ) {
+	unsigned int temp_index = 0;
+	/* verify arguments */
+	/* use animation to determine clip rect for obj */
+	if( obj->anim->interval > 0 ) {
+		temp_index = (((SDL_GetTicks() - obj->anim->init) / obj->anim->interval) + obj->anim->index) % obj->anim->length;
+	}
+	/* blit onto surf at obj posn */
+	if( SDL_BlitSurface( obj->surface, &obj->anim->frames[temp_index], surf, obj->posn )) {
+		fprintf(stderr,"DrawDisplayObject: error from SDL_BlitSurface\n");
+		return -1;
+	}
+	return 0;
+}
+
 /* PushRedraw
 	desc: pushes a SDL_USEREVENT onto the event queue to request redrawing the screen
 	args: standard SDL timer callback arguments. interval is used to repeat the timer
@@ -131,8 +146,7 @@ int Redraw( SDL_Surface *screen, DisplayObject *thing ) {
 		return -1;
 	}
 	/* blit thing */
-	if( SDL_BlitSurface( thing->surface, &thing->anim->frames[thing->anim->index], screen, thing->posn )) {
-		fprintf(stderr, "Redraw: error from SDL_BlitSurface( thing->surface, thing->anim->frames[thing->anim->index], screen, thing->posn )");
+	if( DrawDisplayObject( thing, screen )) {
 		return -1;
 	}
 	/* flip screen */
@@ -183,18 +197,25 @@ int main( int argc , char *argv[] ) {
 
 /* SAMPLE START (no error checking) */
 	DisplayObject *sam = LoadSpriteSheet( "samurai_FF00FF.png", 0x00ff00ff );
-	SDL_Rect *frames = malloc(sizeof(*frames));
+	SDL_Rect *frames = malloc(2*sizeof(*frames));
+	/* frame 0 */
 	frames[0].x = 0;
 	frames[0].y = 0;
 	frames[0].h = 64;
 	frames[0].w = 32;
-	Animation *sam_anim = CreateAnimation( frames, 1 );
+	/* frame 1 */
+	frames[1].x = 32;
+	frames[1].y = 0;
+	frames[1].h = 64;
+	frames[1].w = 64;
+	Animation *sam_anim = CreateAnimation( frames, 2 );
 	sam->anim = sam_anim;
 	sam->posn = malloc(sizeof(*(sam->posn)));
 	sam->posn->x = 100;
 	sam->posn->y = 100;
 	sam->posn->w = 1;
 	sam->posn->h = 1;
+	StartAnimation( sam->anim, 500 );
 /* SAMPLE END */
 
 /* TODO: as this becomes more complicated, should split parts into separate routines */
