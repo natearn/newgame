@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include <chipmunk/chipmunk.h>
 #include "animation.h"
+
+#define FRAME_RATE 60
 
 /* custom events */
 #define REDRAW_EVENT 1
-
-/* stack order */
-#define AFTER_STACK  1
-#define BEFORE_STACK -1
 
 /* DisplayObject */
 typedef struct {
@@ -31,6 +30,7 @@ DisplayObject *CreateDisplayObject( SDL_Surface *s, Animation *a, SDL_Rect *p ) 
 	ret->surface = s;
 	ret->anim = a;
 	ret->posn = p;
+	return ret;
 }
 
 /* FreeDisplayObject
@@ -101,14 +101,11 @@ int DrawDisplayObject( DisplayObject *obj, SDL_Surface *surf ) {
 
 /* PushRedraw
 	desc: pushes a SDL_USEREVENT onto the event queue to request redrawing the screen
-	args: standard SDL timer callback arguments. interval is used to repeat the timer
+	args: standard SDL timer callback arguments. interval is used to repeat the timer, param should be NULL or an Uint32* to a new framerate
 	ret:  time (ms) to next call
-	pre:  none (maybe SDL_Init()?)
-	post: event pushed onto event queue
 */
 Uint32 PushRedraw( Uint32 interval, void *param ) {
 		SDL_Event event;
-		(void)param;
 		event.type = SDL_USEREVENT;
 		event.user.code = REDRAW_EVENT;
 		event.user.data1 = NULL;
@@ -116,7 +113,7 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 		if( SDL_PushEvent( &event ) ) {
 			fprintf(stderr,"PushRedraw: Failure to push REDRAW_EVENT on to event queue\n");
 		}
-		return interval;
+		return ( param ? 1000 / *((unsigned int*)param) : interval );
 }
 
 /* Redraw
@@ -159,16 +156,25 @@ int Redraw( SDL_Surface *screen, DisplayObject *thing ) {
 }
 
 int main( int argc , char *argv[] ) {
+
+	/* SDL vars */
+	SDL_Event event; /* container for the event handler */
+	SDL_Surface *screen = NULL;
+	unsigned int *framerate;
+	SDL_TimerID timerId; /* Id of the PushRedraw timer */
+
+	/* Chipmunk vars */
+	cpSpace *space = NULL; 
+	cpBody *user_body = NULL; /* temporary */
+
+	/* program arguments */
 	(void)argc;
 	(void)argv;
-	SDL_Event event;
-	SDL_Surface *screen = NULL;
-	SDL_TimerID timerId;
 
-	/* init SDL modules. TODO: init only the modules that I use */
+	/* Initialize TODO: init only the modules that I use */
 	SDL_Init(SDL_INIT_EVERYTHING);
-	/* init SDL_image formats */
-	IMG_Init(IMG_INIT_PNG); /* XXX: don't need JPG,PNG,TIF yet */
+	IMG_Init(IMG_INIT_PNG);
+	cpInitChipmunk();
 
 	/* register SDL_Quit and IMG_Quit */
 	if( atexit(SDL_Quit) ) {
@@ -178,7 +184,7 @@ int main( int argc , char *argv[] ) {
 		fprintf(stderr,"Unable to register IMG_Quit atexit\n");
 	}
 
-	/* window TODO: flags should be configurable */
+	/* create window TODO: flags should be configurable */
 	if( !(screen = SDL_SetVideoMode( 640, 480, 32, SDL_HWSURFACE |
 	                                               SDL_DOUBLEBUF |
 	                                               SDL_ANYFORMAT ))) {
@@ -186,11 +192,19 @@ int main( int argc , char *argv[] ) {
 		exit(EXIT_FAILURE);
 	}
 
+	/* create space and bodies/shapes within */
+	space = cpSpaceNew();
+
 	/* set the window caption */
 	SDL_WM_SetCaption( "newgame", NULL );
 
-	/* register redraw timer event */
-	if( !(timerId = SDL_AddTimer( 1000/60, PushRedraw, NULL )) ) {
+	/* register redraw timer event. framerate must be on the heap because it may be accessed from other threads */
+	if( !(framerate = malloc(sizeof(*framerate))) ) {
+		fprintf(stderr,"malloc failure (probably out of memory)\n");
+		exit(EXIT_FAILURE);
+	}
+	*framerate = FRAME_RATE;
+	if( !(timerId = SDL_AddTimer( 1000/(*framerate), PushRedraw, framerate )) ) {
 		fprintf(stderr,"failure to add timer\n");
 		exit(EXIT_FAILURE);
 	}
@@ -198,16 +212,18 @@ int main( int argc , char *argv[] ) {
 /* SAMPLE START (no error checking) */
 	DisplayObject *sam = LoadSpriteSheet( "samurai_FF00FF.png", 0x00ff00ff );
 	SDL_Rect *frames = malloc(2*sizeof(*frames));
+	unsigned int sam_w = 50;
+	unsigned int sam_h = 64;
 	/* frame 0 */
-	frames[0].x = 0;
+	frames[0].x = 44;
 	frames[0].y = 0;
-	frames[0].h = 64;
-	frames[0].w = 32;
+	frames[0].h = sam_h;
+	frames[0].w = sam_w;
 	/* frame 1 */
-	frames[1].x = 32;
+	frames[1].x = frames[0].x + sam_w + 4;
 	frames[1].y = 0;
-	frames[1].h = 64;
-	frames[1].w = 64;
+	frames[1].h = sam_h;
+	frames[1].w = sam_w;
 	Animation *sam_anim = CreateAnimation( frames, 2 );
 	sam->anim = sam_anim;
 	sam->posn = malloc(sizeof(*(sam->posn)));
@@ -230,17 +246,36 @@ int main( int argc , char *argv[] ) {
 							exit(EXIT_FAILURE);
 						}
 						break;
+					default:
+						break;
 				}
 			case SDL_KEYDOWN:
+				// startInput( gameState, event.key.keysym.sym );
+				// break;
 				switch( event.key.keysym.sym ) {
+					case SDLK_UP:
+						break;
+					case SDLK_DOWN:
+						break;
+					case SDLK_LEFT:
+						break;
+					case SDLK_RIGHT:
+						break;
 					case SDLK_ESCAPE:
 						fprintf(stderr,"SDLK_ESCAPE\n");
 						goto done;
+					default:
+						break;
 				}
+				break;
+			case SDL_KEYUP:
+				// stopInput( gameState, event.key.keysym.sym );
 				break;
 			case SDL_QUIT:
 				fprintf(stderr,"SDL_QUIT\n");
 				goto done;
+			default:
+				break;
 		}
 	}
 done:
