@@ -1,6 +1,5 @@
 1.
-	- add shapes
-	- create a second object to test collisions (dynamic)
+	- look into collision handling (callbacks)
 
 2.
 	- create a data structure for full game state (used for saving/loading games)

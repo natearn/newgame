@@ -189,9 +189,21 @@ int main( int argc , char *argv[] ) {
 	cpSpace *space = cpSpaceNew();
 	cpBody *body = cpSpaceAddBody(space, cpBodyNew(10.0f, INFINITY)); /* mass 10, moment infinity */
 	body->p = cpv(100, 100);
+	cpShape *shape = NULL;
 
-	cpBody *back = cpSpaceAddBody(space, cpBodyNew(INFINITY, INFINITY)); /* mass INFINITY, moment infinity */
-	back->p = cpvzero;
+	/* wall in the screen */
+	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(0,0), cpv(0,480), 0.0f));
+	shape->collision_type = 1;
+	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(0,480), cpv(640,480), 0.0f));
+	shape->collision_type = 1;
+	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(640,480), cpv(640,0), 0.0f));
+	shape->collision_type = 1;
+	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(640,0), cpv(0,0), 0.0f));
+	shape->collision_type = 1;
+
+	/* add shape to player */
+	shape = cpSpaceAddShape(space, cpCircleShapeNew(body, 10.0f, cpvzero));
+	shape->collision_type = 1;
 
 	/* make a green background */
 	SDL_Surface *bsurface = SDL_CreateRGBSurface( SDL_HWSURFACE, 640, 480, 32, 0, 0, 0, 0 );
@@ -199,7 +211,7 @@ int main( int argc , char *argv[] ) {
 		fprintf(stderr,"error from SDL_FillRect( bsurface, NULL, 0x0000ff00 )\n");
 		exit(EXIT_FAILURE);
 	}
-	DisplayObject *background = CreateDisplayObject( bsurface, CreateAnimation( NULL, 0 ), back );
+	DisplayObject *background = CreateDisplayObject( bsurface, CreateAnimation( NULL, 0 ), &space->staticBody );
 	DisplayObject *player = CreateDisplayObject( LoadSpriteSheet( "samurai_FF00FF.png", 0x00ff00ff ), CreateAnimation( NULL, 0 ), body );
 
 	/* populate the display stack with the objects TODO: build routines for the stack */
