@@ -1,7 +1,5 @@
 1.
-	- create a chipmunk cpSpace and put an object in it.
-	- combine a chipmunk object to a display object (need to be able to see the objects)
-	- bind keys to move the object around
+	- add shapes
 	- create a second object to test collisions (dynamic)
 
 2.

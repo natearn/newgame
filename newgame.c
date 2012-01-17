@@ -94,28 +94,25 @@ int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpS
 							exit(EXIT_FAILURE);
 						}
 						/* call this here until I decide where it belongs */
-						cpSpaceStep(space, 10);
+						cpSpaceStep(space, 1);
 						break;
 					default:
 						break;
 				}
+				break;
 			case SDL_KEYDOWN:
 				switch( event.key.keysym.sym ) {
 					case SDLK_UP:
-						cpBodyApplyImpulse(body, cpvzero, cpv(0.0f,10.0f));
-						cpBodyActivate(body);
+						body->v = cpvadd( body->v, cpv(0.0f,-10.0f) );
 						break;
 					case SDLK_DOWN:
-						cpBodyApplyImpulse(body, cpvzero, cpv(0.0f,-10.0f));
-						cpBodyActivate(body);
+						body->v = cpvadd( body->v, cpv(0.0f,10.0f) );
 						break;
 					case SDLK_LEFT:
-						cpBodyApplyImpulse(body, cpvzero, cpv(-10.0f,0.0f));
-						cpBodyActivate(body);
+						body->v = cpvadd( body->v, cpv(-10.0f,0.0f) );
 						break;
 					case SDLK_RIGHT:
-						cpBodyApplyImpulse(body, cpvzero, cpv(10.0f,0.0f));
-						cpBodyActivate(body);
+						body->v = cpvadd( body->v, cpv(10.0f,0.0f) );
 						break;
 					case SDLK_ESCAPE:
 						fprintf(stderr,"SDLK_ESCAPE\n");
@@ -127,12 +124,16 @@ int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpS
 			case SDL_KEYUP:
 				switch( event.key.keysym.sym ) {
 					case SDLK_UP:
+						body->v = cpvadd( body->v, cpv(0.0f,10.0f) );
 						break;
 					case SDLK_DOWN:
+						body->v = cpvadd( body->v, cpv(0.0f,-10.0f) );
 						break;
 					case SDLK_LEFT:
+						body->v = cpvadd( body->v, cpv(10.0f,0.0f) );
 						break;
 					case SDLK_RIGHT:
+						body->v = cpvadd( body->v, cpv(-10.0f,0.0f) );
 						break;
 					default:
 						break;
@@ -153,10 +154,9 @@ int main( int argc , char *argv[] ) {
 
 	/* SDL vars */
 	SDL_Surface *screen = NULL;
-	unsigned int *frameRate;
 	SDL_TimerID timerId; /* Id of the PushRedraw timer */
+	unsigned int *frameRate;
 	DisplayStack *stack = NULL;;
-
 
 	/* program arguments */
 	(void)argc;
