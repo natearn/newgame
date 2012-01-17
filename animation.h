@@ -1,7 +1,7 @@
 #ifndef _ANIMATION_H_
 #define _ANIMATION_H_
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 /* Animation v2
 	this struct describes the state of an sprite-sheet animation, and is

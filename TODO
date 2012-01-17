@@ -1,5 +1,15 @@
-- make sprite animate on timer
-- add some keyboard events
-- bind sprite changes to keyboard events
-- create a DisplayObject stack for redraw to use
-- figure out how maps should be done
+1.
+	- create a chipmunk cpSpace and put an object in it.
+	- combine a chipmunk object to a display object (need to be able to see the objects)
+	- bind keys to move the object around
+	- create a second object to test collisions (dynamic)
+
+2.
+	- create a data structure for full game state (used for saving/loading games)
+	- create a game state file format and a parser for it
+	- create methods for saving and loading game state
+
+3.
+	- decide how maps are going to work( tiles/chunks? )
+	- implement a map to test the design
+	- add maps to the game state spec (including loading and storing)
