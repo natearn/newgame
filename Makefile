@@ -1,4 +1,4 @@
-CFLAGS=`sdl-config --cflags` -Wall -Wextra -pedantic
+CFLAGS=`sdl-config --cflags` -Wall -Wextra -pedantic -std=c99
 # -ansi
 CC=gcc
 

@@ -12,8 +12,12 @@
 /* custom events */
 #define REDRAW_EVENT 1
 
+Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
+	return SDL_MapRGB( fmt, (colour & 0xff0000) >> 16, (colour & 0x00ff00) >> 8, (colour & 0x0000ff) );
+}
+
 /* create a display-ready SDL_Sufrace* from sprite sheet (file and transparent colour) */
-SDL_Surface *LoadSpriteSheet( const char* file, Uint32 colour ) {
+SDL_Surface *LoadSpriteSheet( const char *file, Uint32 colour ) {
 	SDL_Surface *sprites = NULL;
 	SDL_Surface *format = NULL;
 	/* load the file */
@@ -21,7 +25,7 @@ SDL_Surface *LoadSpriteSheet( const char* file, Uint32 colour ) {
 		goto lss_error;
 	}
 	/* set transparency key */
-	if( SDL_SetColorKey( sprites, SDL_SRCCOLORKEY | SDL_RLEACCEL, colour )) {
+	if( SDL_SetColorKey( sprites, SDL_SRCCOLORKEY | SDL_RLEACCEL, FormatColour( sprites->format, colour )) ) {
 		goto post_sprites;
 	}
 	/* make it display-ready */
@@ -33,7 +37,7 @@ SDL_Surface *LoadSpriteSheet( const char* file, Uint32 colour ) {
 post_sprites:
 	SDL_FreeSurface( sprites );
 lss_error:
-	fprintf(stderr,"BMPtoDisplayObject failed: %s\n",SDL_GetError());
+	fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
 	return NULL; /* failure */
 }
 
@@ -55,16 +59,16 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 }
 
 /* Redraw
-	iterates over (stack), drawing each DisplayObject to the (screen) with the
-	DrawDisplayObject method, then flip the screen. Returns 0 on success, -1 on failure.
+	iterates over (stack), blitting each DisplayObject to (screen) with the
+	DrawDisplayObject method, then flips (renders) the screen.
 */
 int Redraw( SDL_Surface *screen, DisplayStack *stack ) {
 	/* draw the stack */
-	while( stack ) {
+	for(; stack; stack = stack->next) {
 		if( DrawDisplayObject( stack->obj, screen )) {
+			/* DrawDisplayObject has its own error messages */
 			return -1;
 		}
-		stack = stack->next;
 	}
 	/* flip screen */
 	if( SDL_Flip(screen) ) {
@@ -82,7 +86,7 @@ int Redraw( SDL_Surface *screen, DisplayStack *stack ) {
 	queue and then handles them appropriately. The manager should return when
 	it receives the SDL_Quit event. Returns -1 on failure (control flow error)
 */
-int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpSpace *space ) {
+int RunEventManager( SDL_Surface *screen );
 	SDL_Event event;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -90,11 +94,9 @@ int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpS
 				switch( event.user.code ) {
 					case REDRAW_EVENT: 
 						/* fprintf(stderr,"REDRAW_EVENT\n"); */
-						if( Redraw( screen, stack ) ) {
+						if( Redraw( screen ) ) {
 							exit(EXIT_FAILURE);
 						}
-						/* call this here until I decide where it belongs */
-						cpSpaceStep(space, 1);
 						break;
 					default:
 						break;
@@ -102,18 +104,6 @@ int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpS
 				break;
 			case SDL_KEYDOWN:
 				switch( event.key.keysym.sym ) {
-					case SDLK_UP:
-						body->v = cpvadd( body->v, cpv(0.0f,-10.0f) );
-						break;
-					case SDLK_DOWN:
-						body->v = cpvadd( body->v, cpv(0.0f,10.0f) );
-						break;
-					case SDLK_LEFT:
-						body->v = cpvadd( body->v, cpv(-10.0f,0.0f) );
-						break;
-					case SDLK_RIGHT:
-						body->v = cpvadd( body->v, cpv(10.0f,0.0f) );
-						break;
 					case SDLK_ESCAPE:
 						fprintf(stderr,"SDLK_ESCAPE\n");
 						return 0;
@@ -121,27 +111,20 @@ int RunEventManager( SDL_Surface *screen, DisplayStack *stack, cpBody *body, cpS
 						break;
 				}
 				break;
-			case SDL_KEYUP:
-				switch( event.key.keysym.sym ) {
-					case SDLK_UP:
-						body->v = cpvadd( body->v, cpv(0.0f,10.0f) );
-						break;
-					case SDLK_DOWN:
-						body->v = cpvadd( body->v, cpv(0.0f,-10.0f) );
-						break;
-					case SDLK_LEFT:
-						body->v = cpvadd( body->v, cpv(10.0f,0.0f) );
-						break;
-					case SDLK_RIGHT:
-						body->v = cpvadd( body->v, cpv(-10.0f,0.0f) );
-						break;
-					default:
-						break;
-				}
-				break;
 			case SDL_QUIT:
 				fprintf(stderr,"SDL_QUIT\n");
 				return 0;
+			case SDL_VIDEORESIZE:
+				fprintf(stderr,"SDL_VIDEORESIZE\n");
+				break;
+			case SDL_VIDEOEXPOSE:
+				fprintf(stderr,"SDL_VIDEOEXPOSE\n");
+				break;
+			case SDL_SYSWMEVENT:
+				fprintf(stderr,"SDL_SYSWMEVENT\n");
+				break;
+			case SDL_ACTIVEEVENT:
+				break;
 			default:
 				break;
 		}
@@ -176,54 +159,12 @@ int main( int argc , char *argv[] ) {
 	}
 
 	/* create window TODO: flags should be configurable */
-	if( !(screen = SDL_SetVideoMode( 640, 480, 8, SDL_HWSURFACE |
+	if( !(screen = SDL_SetVideoMode( 640, 480, 32, SDL_HWSURFACE |
 	                                              SDL_DOUBLEBUF |
 	                                              SDL_ANYFORMAT ))) {
 		fprintf(stderr,"Unable to set video mode: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-
-#if 1
-/* SAMPLE */
-	/* create space and bodies/shapes within */
-	cpSpace *space = cpSpaceNew();
-	cpBody *body = cpSpaceAddBody(space, cpBodyNew(10.0f, INFINITY)); /* mass 10, moment infinity */
-	body->p = cpv(100, 100);
-	cpShape *shape = NULL;
-
-	/* wall in the screen */
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(0,0), cpv(0,480), 0.0f));
-	shape->collision_type = 1;
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(0,480), cpv(640,480), 0.0f));
-	shape->collision_type = 1;
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(640,480), cpv(640,0), 0.0f));
-	shape->collision_type = 1;
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(&space->staticBody, cpv(640,0), cpv(0,0), 0.0f));
-	shape->collision_type = 1;
-
-	/* add shape to player */
-	shape = cpSpaceAddShape(space, cpCircleShapeNew(body, 10.0f, cpvzero));
-	shape->collision_type = 1;
-
-	/* make a green background */
-	SDL_Surface *bsurface = SDL_CreateRGBSurface( SDL_HWSURFACE, 640, 480, 32, 0, 0, 0, 0 );
-	if( SDL_FillRect( bsurface, NULL, 0x0000ff00 )) {
-		fprintf(stderr,"error from SDL_FillRect( bsurface, NULL, 0x0000ff00 )\n");
-		exit(EXIT_FAILURE);
-	}
-	DisplayObject *background = CreateDisplayObject( bsurface, CreateAnimation( NULL, 0 ), &space->staticBody );
-	DisplayObject *player = CreateDisplayObject( LoadSpriteSheet( "samurai_FF00FF.png", 0x00ff00ff ), CreateAnimation( NULL, 0 ), body );
-
-	/* populate the display stack with the objects TODO: build routines for the stack */
-	stack = malloc(sizeof(*stack));
-	stack->obj = background;
-	stack->next = malloc(sizeof(*stack));
-	stack->next->obj = player;
-	stack->next->next = NULL;
-
-	fprintf(stderr,"constructed sample\n");
-/* SAMPLE */
-#endif
 
 	/* set the window caption */
 	SDL_WM_SetCaption( "newgame", NULL );
@@ -240,10 +181,9 @@ int main( int argc , char *argv[] ) {
 	}
 
 	/* Run Event Manager */
-	if(RunEventManager(screen,stack,body,space)) {
+	if(RunEventManager(screen)) {
 		exit(EXIT_FAILURE);
 	}
-
 	/* clean-up code goes here */
 
 	return 0;

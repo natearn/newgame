@@ -1,12 +1,22 @@
-1.
+
+	- combine SDL_Surfaces with animations and create a simple API for controlling it ("finalize" sprite design)
+
 	- look into collision handling (callbacks)
 
-2.
 	- create a data structure for full game state (used for saving/loading games)
 	- create a game state file format and a parser for it
 	- create methods for saving and loading game state
 
-3.
-	- decide how maps are going to work( tiles/chunks? )
+	- create an abstraction layer around keyboard inputs so that I can later add configurable key mappings
+		actions(15):
+			- move up/down/left/right
+			- strike
+			- charge
+			- dodge
+			- block
+			- skill 1/2/3/4
+			- menu
+			- cancel
+
 	- implement a map to test the design
 	- add maps to the game state spec (including loading and storing)
