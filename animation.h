@@ -5,37 +5,43 @@
 
 #define StopAnimation(anim) StartAnimation((anim),0)
 
-/* an animation frame */
-typedef struct {
-	SDL_Surface* surface;
-	SDL_Rect clip;
-} Frame;
+/* example YAML format for an animation
+	sprite: {
+		name     : zombie,
+		position : [12,98],
+		surface  : surface_file_name,
+		animations: [
+			{
+				length   : 4,
+				index    : 2,
+				reset    : 2,
+				interval : 300,
+				frame    : [
+					{ x, y, w, h },
+					{ x, y, w, h },
+				],
+			},
+		],
+	},
+*/
 
 /* an animation */
+/* requires animations frames to be equal size and in sequence on the sprite sheet */
 typedef struct {
-	//const char* name;       /* name of animation used for easy switching */
-	Frame *frames;            /* the frames of the animation */
-	size_t length;            /* number of frames in animation */
-	unsigned int index;       /* index of current frame in animation */
-	unsigned int repeatIndex; /* index to reset to upon reaching the end of the animation */
-	Uint32 init;              /* time stamp of animation start (for automatic animations)*/
-	unsigned int interval;    /* frequency of index incrementation (for automatic animations)*/
+	/*SDL_Rect *frames;       this member is meant to accomodate poorly formated sprite sheets */
+	SDL_Rect *frames;        /* initial position and size of animation frames */
+	size_t length;         /* number of frames in animation */
+	unsigned int index;    /* index of current frame in animation */
+	unsigned int reset;    /* index to reset to upon reaching the end of the frames array */
+	Uint32 time;           /* time stamp of animation start (for automatic animations)*/
+	unsigned int interval; /* interval of index incrementation (for automatic animations)*/
 } Animation;
 
-/* contstruct an animation frame */
-Frame CreateFrame( SDL_Surface*, Sint16 x, Sint16 y, Uint16 w, Uint16 h );
+/* Create an animation, length must be equal to the size of the frames array */
+Animation *CreateAnimation( size_t length, unsigned int start, unsigned int reset, SDL_Rect *frames );
 
-/* Create an animation, if length is 0, then no other arguments are used and an empty animation is returned */
-Animation CreateAnimation( size_t length, unsigned int start, unsigned int repeat, const Frame* frames );
-
-/* returns a copy of the animtation */
-Animation CopyAnimation( const Animation anim );
-
-/* return an animation that is the reverse of an animation */
-Animation ReverseAnimation( const Animation anim );
-
-/* return an animation that is the combination of the two animations */
-Animation AppendAnimation( const Animation start, const Animation end );
+/* Initialize an existing animation, length must be equal to the size of the frames array */
+Animation *InitAnimation( Animation *anim, size_t length, unsigned int start, unsigned int reset, SDL_Rect *frames );
 
 /* free the animation frames array, does not free SDL_Surfaces */
 void FreeAnimation( Animation *anim );
@@ -47,14 +53,16 @@ int StartAnimation( Animation* anim, unsigned int i );
 /* increment the animation to the next frame */
 int NextFrame( Animation* anim );
 
-/* insert a frame at index of animation, any frames >= index are shifted back */
-//int InsertFrame( Animation *anim, Frame frame, unsigned int index );
+/* update the animation index for the new time */
+void UpdateAnimation( Animation *anim, Uint32 time );
 
-/* remove the frame at index, any frame > index is shifted forward */
-//int RemoveFrame( Animation *anim, unsigned int index );
+/* update the animation index and return the offset frame */
+SDL_Rect *GetFrame( Animation *anim );
 
+#if 0
 /* draw the animation onto the surface */
 /* if the animation has an interval > 0, then the index is updated before drawing */
 int DrawAnimation( Animation *anim, SDL_Surface *surface, SDL_Rect *posn );
-
 #endif
+
+#endif /* _ANIMATION_H_ */

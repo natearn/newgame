@@ -5,12 +5,18 @@
 #include <SDL/SDL_image.h>
 #include <chipmunk/chipmunk.h>
 #include "animation.h"
-#include "displayobject.h"
+#include "sprite.h"
 
 #define FRAME_RATE 60
 
 /* custom events */
 #define REDRAW_EVENT 1
+
+struct _DisplayList {
+	Sprite *sprite;
+	struct _DisplayList *next;
+};
+typedef struct _DisplayList DisplayList;
 
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
 	return SDL_MapRGB( fmt, (colour & 0xff0000) >> 16, (colour & 0x00ff00) >> 8, (colour & 0x0000ff) );
@@ -59,14 +65,14 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 }
 
 /* Redraw
-	iterates over (stack), blitting each DisplayObject to (screen) with the
-	DrawDisplayObject method, then flips (renders) the screen.
+	iterates over (stack), blitting each Sprite to (screen) with the
+	DrawSprite method, then flips the screen.
 */
-int Redraw( SDL_Surface *screen, DisplayStack *stack ) {
+int Redraw( SDL_Surface *screen, const DisplayList *list ) {
 	/* draw the stack */
-	for(; stack; stack = stack->next) {
-		if( DrawDisplayObject( stack->obj, screen )) {
-			/* DrawDisplayObject has its own error messages */
+	for(; list; list = list->next) {
+		if( DrawSprite( list->sprite, screen )) {
+			/* DrawSprite has its own error messages */
 			return -1;
 		}
 	}
@@ -86,7 +92,7 @@ int Redraw( SDL_Surface *screen, DisplayStack *stack ) {
 	queue and then handles them appropriately. The manager should return when
 	it receives the SDL_Quit event. Returns -1 on failure (control flow error)
 */
-int RunEventManager( SDL_Surface *screen );
+int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
 	SDL_Event event;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -94,7 +100,7 @@ int RunEventManager( SDL_Surface *screen );
 				switch( event.user.code ) {
 					case REDRAW_EVENT: 
 						/* fprintf(stderr,"REDRAW_EVENT\n"); */
-						if( Redraw( screen ) ) {
+						if( Redraw( screen, list ) ) {
 							exit(EXIT_FAILURE);
 						}
 						break;
@@ -129,17 +135,19 @@ int RunEventManager( SDL_Surface *screen );
 				break;
 		}
 	}
-	fprintf(stderr,"RenEventManager error: reached end without quit event\n");
+	fprintf(stderr,"RunEventManager error: reached end without quit event\n");
 	return -1;
 }
 
 int main( int argc , char *argv[] ) {
 
-	/* SDL vars */
+	/* vars */
 	SDL_Surface *screen = NULL;
 	SDL_TimerID timerId; /* Id of the PushRedraw timer */
 	unsigned int *frameRate;
-	DisplayStack *stack = NULL;;
+	/* GameState *state = NULL; */
+	DisplayList *list = NULL;
+	cpVect screen_posn;
 
 	/* program arguments */
 	(void)argc;
@@ -158,7 +166,8 @@ int main( int argc , char *argv[] ) {
 		fprintf(stderr,"Unable to register IMG_Quit atexit\n");
 	}
 
-	/* create window TODO: flags should be configurable */
+	/* create window */
+	/* TODO: this should all be set by the user */
 	if( !(screen = SDL_SetVideoMode( 640, 480, 32, SDL_HWSURFACE |
 	                                              SDL_DOUBLEBUF |
 	                                              SDL_ANYFORMAT ))) {
@@ -180,8 +189,31 @@ int main( int argc , char *argv[] ) {
 		exit(EXIT_FAILURE);
 	}
 
+	/* initialize game data */
+	/* color: 7bd5fe */
+	/* posn: 16,180 (16x18) */
+	SDL_Surface *bgsurf=NULL, *toonsurf=NULL;
+	toonsurf = LoadSpriteSheet( "charsets1.png", 0x7bd5fe );
+	bgsurf = LoadSpriteSheet( "charsets1.png", 0x7bd5fe );
+	Sprite bg, toon;
+	Animation walking, ground;
+	SDL_Rect frames[4] = {
+		{.x=16,.y=180+18,.w=16,.h=18},
+		{.x=16*2,.y=180+18,.w=16,.h=18},
+		{.x=16*3,.y=180+18,.w=16,.h=18},
+		{.x=0,.y=0,.w=330,.h=400}
+	};
+	InitAnimation( &walking, 3, 0, 0, frames );
+	InitAnimation( &ground, 1, 0, 0, &frames[3] );
+	InitSprite( &toon, toonsurf, 1, &walking, 0 );
+	InitSprite( &bg, bgsurf, 1, &ground, 0 );
+	DisplayList tl = { &toon, NULL };
+	DisplayList bl = { &bg, &tl };
+	StartAnimation( toon.currentAnimation, 300 );
+	list = &bl;
+
 	/* Run Event Manager */
-	if(RunEventManager(screen)) {
+	if(RunEventManager(screen,list)) {
 		exit(EXIT_FAILURE);
 	}
 	/* clean-up code goes here */
