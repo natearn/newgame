@@ -1,11 +1,9 @@
 
-	- combine SDL_Surfaces with animations and create a simple API for controlling it ("finalize" sprite design)
-
-	- look into collision handling (callbacks)
-
 	- create a data structure for full game state (used for saving/loading games)
-	- create a game state file format and a parser for it
-	- create methods for saving and loading game state
+		- all shared data is kept in this structure
+		- add keyboard controls to game state through a callback function (HandleInputEvent(gamestate,event))
+		- serialize with YAML!
+		- create methods for saving and loading game state
 
 	- create an abstraction layer around keyboard inputs so that I can later add configurable key mappings
 		actions(15):
@@ -18,5 +16,6 @@
 			- menu
 			- cancel
 
-	- implement a map to test the design
-	- add maps to the game state spec (including loading and storing)
+	- create a map data structure
+		- implement a map to test the design
+		- add maps to the game state spec (including loading and storing)

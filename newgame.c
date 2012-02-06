@@ -6,17 +6,12 @@
 #include <chipmunk/chipmunk.h>
 #include "animation.h"
 #include "sprite.h"
+#include "gamestate.h"
 
 #define FRAME_RATE 60
 
 /* custom events */
 #define REDRAW_EVENT 1
-
-struct _DisplayList {
-	Sprite *sprite;
-	struct _DisplayList *next;
-};
-typedef struct _DisplayList DisplayList;
 
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
 	return SDL_MapRGB( fmt, (colour & 0xff0000) >> 16, (colour & 0x00ff00) >> 8, (colour & 0x0000ff) );
@@ -48,9 +43,9 @@ lss_error:
 }
 
 /* PushRedraw
-	desc: pushes a SDL_USEREVENT onto the event queue to request redrawing the screen
-	args: standard SDL timer callback arguments. interval is used to repeat the timer, param should be NULL or an Uint32* to a new framerate
-	ret:  time (ms) to next call
+	This is the callback used to queue-up a redraw event. Param should point to
+	the frames-per-second that the game should be running at. See SDL_AddTimer
+	for details.
 */
 Uint32 PushRedraw( Uint32 interval, void *param ) {
 		SDL_Event event;
@@ -68,9 +63,10 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 	iterates over (stack), blitting each Sprite to (screen) with the
 	DrawSprite method, then flips the screen.
 */
-int Redraw( SDL_Surface *screen, const DisplayList *list ) {
-	/* draw the stack */
-	for(; list; list = list->next) {
+int Redraw( SDL_Surface *screen, GameState *game ) {
+	/* draw the map (game->map)*/
+	/* draw the sprites (game->sprites)*/
+	for(SpriteList *list=game->sprites; list; list = list->next) {
 		if( DrawSprite( list->sprite, screen )) {
 			/* DrawSprite has its own error messages */
 			return -1;
@@ -84,15 +80,12 @@ int Redraw( SDL_Surface *screen, const DisplayList *list ) {
 	return 0;
 }
 
-/* TODO: as this becomes more complicated, should split parts into separate routines */
-/* TODO: decide how game state is going to be managed and pass the appropriate state to
-         this manager */
-/* RunEventManager()
+/* EventManager()
 	This routine runs the event manager, which waits for events in the event
 	queue and then handles them appropriately. The manager should return when
 	it receives the SDL_Quit event. Returns -1 on failure (control flow error)
 */
-int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
+int EventHandler( SDL_Surface *screen, GameState *game ) {
 	SDL_Event event;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -100,7 +93,7 @@ int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
 				switch( event.user.code ) {
 					case REDRAW_EVENT: 
 						/* fprintf(stderr,"REDRAW_EVENT\n"); */
-						if( Redraw( screen, list ) ) {
+						if( Redraw( screen, game ) ) {
 							exit(EXIT_FAILURE);
 						}
 						break;
@@ -108,18 +101,42 @@ int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
 						break;
 				}
 				break;
+			/* input event types */
 			case SDL_KEYDOWN:
-				switch( event.key.keysym.sym ) {
-					case SDLK_ESCAPE:
-						fprintf(stderr,"SDLK_ESCAPE\n");
-						return 0;
-					default:
+				/* universal quit condition: ctrl-q */
+				if( event.key.keysym.sym == SDLK_q && (event.key.keysym.mod & KMOD_CTRL) ) {
+					event.type = SDL_QUIT;
+					if( SDL_PushEvent( &event ) ) {
+						fprintf(stderr,"PushRedraw: Failure to push SDL_QUIT onto event queue\n");
+						return -1;
+					}
+					break;
+				}
+				fprintf(stderr,"key down event\n");
+#if 0
+				switch( GetAction( game->controls, &event )) {
+					case MOVE_LEFT:
+						/* stop moving right */
+						StartMoveLeft( game );
 						break;
 				}
+#endif
 				break;
+			case SDL_KEYUP:
+				fprintf(stderr,"key up event\n");
+#if 0
+				switch( GetAction( game->controls, &event )) {
+					case MOVE_LEFT:
+						StopMoveLeft( game );
+						break;
+				}
+#endif
+				break;
+			/* exit the program */
 			case SDL_QUIT:
 				fprintf(stderr,"SDL_QUIT\n");
 				return 0;
+			/* report other events so that I know when they are happenning */
 			case SDL_VIDEORESIZE:
 				fprintf(stderr,"SDL_VIDEORESIZE\n");
 				break;
@@ -130,6 +147,7 @@ int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
 				fprintf(stderr,"SDL_SYSWMEVENT\n");
 				break;
 			case SDL_ACTIVEEVENT:
+				/* this one happens a lot */
 				break;
 			default:
 				break;
@@ -139,17 +157,16 @@ int RunEventManager( SDL_Surface *screen, DisplayList *list ) {
 	return -1;
 }
 
-int main( int argc , char *argv[] ) {
+int main( int argc, char *argv[] ) {
 
 	/* vars */
 	SDL_Surface *screen = NULL;
 	SDL_TimerID timerId; /* Id of the PushRedraw timer */
 	unsigned int *frameRate;
-	/* GameState *state = NULL; */
-	DisplayList *list = NULL;
+	GameState game;
 	cpVect screen_posn;
 
-	/* program arguments */
+	/* program arguments currently unused */
 	(void)argc;
 	(void)argv;
 
@@ -167,7 +184,12 @@ int main( int argc , char *argv[] ) {
 	}
 
 	/* create window */
-	/* TODO: this should all be set by the user */
+	/* TODO: this should all be set by the user:
+		resolution
+		HWSURFACE
+		DOUBLEBUF
+		frameRate
+	*/
 	if( !(screen = SDL_SetVideoMode( 640, 480, 32, SDL_HWSURFACE |
 	                                              SDL_DOUBLEBUF |
 	                                              SDL_ANYFORMAT ))) {
@@ -190,32 +212,33 @@ int main( int argc , char *argv[] ) {
 	}
 
 	/* initialize game data */
-	/* color: 7bd5fe */
-	/* posn: 16,180 (16x18) */
+	/* SAMPLE */
 	SDL_Surface *bgsurf=NULL, *toonsurf=NULL;
 	toonsurf = LoadSpriteSheet( "charsets1.png", 0x7bd5fe );
 	bgsurf = LoadSpriteSheet( "charsets1.png", 0x7bd5fe );
 	Sprite bg, toon;
 	Animation walking, ground;
-	SDL_Rect frames[4] = {
+	SDL_Rect frames[5] = {
 		{.x=16,.y=180+18,.w=16,.h=18},
 		{.x=16*2,.y=180+18,.w=16,.h=18},
 		{.x=16*3,.y=180+18,.w=16,.h=18},
+		{.x=16*2,.y=180+18,.w=16,.h=18},
 		{.x=0,.y=0,.w=330,.h=400}
 	};
-	InitAnimation( &walking, 3, 0, 0, frames );
-	InitAnimation( &ground, 1, 0, 0, &frames[3] );
+	InitAnimation( &walking, 4, 0, 0, frames );
+	InitAnimation( &ground, 1, 0, 0, &frames[4] );
 	InitSprite( &toon, toonsurf, 1, &walking, 0 );
 	InitSprite( &bg, bgsurf, 1, &ground, 0 );
-	DisplayList tl = { &toon, NULL };
-	DisplayList bl = { &bg, &tl };
-	StartAnimation( toon.currentAnimation, 300 );
-	list = &bl;
+	SpriteList tl = { &toon, NULL };
+	SpriteList bl = { &bg, &tl };
+	StartAnimation( toon.currentAnimation, 100 );
+	game.sprites = &bl;
 
-	/* Run Event Manager */
-	if(RunEventManager(screen,list)) {
+	/* Run Event Loop */
+	if(EventHandler(screen,&game)) {
 		exit(EXIT_FAILURE);
 	}
+
 	/* clean-up code goes here */
 
 	return 0;
