@@ -6,16 +6,20 @@
 #include "animation.h"
 #include "sprite.h"
 
-Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations, const unsigned int currentIndex ) {
+#define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
+
+Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations,
+                      const unsigned int currentIndex, cpBody *body ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
 		return NULL;
 	}
-	return InitSprite( ret, surface, numAnimations, animations, currentIndex );
+	return InitSprite( ret, surface, numAnimations, animations, currentIndex, body );
 }
 
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations, const unsigned int currentIndex ) {
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations,
+                    const unsigned int currentIndex, cpBody *body ) {
 	assert(sprite);
 	sprite->surface = surface;
 	sprite->numAnimations = numAnimations;
@@ -25,12 +29,14 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	}
 	memcpy( sprite->animations, animations, numAnimations*sizeof(*animations) );
 	sprite->currentAnimation = &sprite->animations[currentIndex];
+	sprite->body = body;
 	return sprite;
 }
 
 void FreeSprite( Sprite *sprite ) {
 	assert(sprite);
 	assert(sprite->animations);
+	/* XXX: might want to free body here */
 	free(sprite->animations);
 	free(sprite);
 }
@@ -40,14 +46,16 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
 	assert(surface);
 	SDL_Rect *frame;
 	SDL_Rect posn;
+	cpVect offset;
 
 	/* get animation frame */
 	UpdateAnimation( sprite->currentAnimation, SDL_GetTicks() );
 	frame = GetFrame( sprite->currentAnimation );
 
 	/* get the sprite position */
-	/*posn = GetSpritePosn( sprite );*/
-	posn = (SDL_Rect){0,0,0,0};
+	/* TODO: calculated offset to center of grav */
+	offset = cpvzero;
+	posn = Vect2Rect( cpvadd( offset, cpBodyGetPos( sprite->body )));
 
 	/* blit */
 	if( SDL_BlitSurface( sprite->surface, frame, surface, &posn )) {

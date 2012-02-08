@@ -12,23 +12,22 @@
 
 /* Sprite */
 typedef struct {
-	Animation *currentAnimation; /* active animation */
+	SDL_Surface *surface;
 	Animation *animations;       /* array of animations */
 	size_t numAnimations;        /* size of animations array */
-	SDL_Surface *surface;
+	Animation *currentAnimation; /* pointer to active animation */
+	cpBody *body;                /* physical body of the sprite */
 #if 0
-	cpVect position;             /* last drawing position */
-	cpBody *body;
 	cpShape *shapes;
 	size_t numShapes;
 #endif
 } Sprite;
 
 /* allocate and initialize a sprite */
-Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex );
+Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body );
 
 /* initialize a sprite */
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex );
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );

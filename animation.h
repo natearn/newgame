@@ -12,6 +12,7 @@
 		surface  : surface_file_name,
 		animations: [
 			{
+				name     : walk_right
 				length   : 4,
 				index    : 2,
 				reset    : 2,
@@ -28,8 +29,7 @@
 /* an animation */
 /* requires animations frames to be equal size and in sequence on the sprite sheet */
 typedef struct {
-	/*SDL_Rect *frames;       this member is meant to accomodate poorly formated sprite sheets */
-	SDL_Rect *frames;        /* initial position and size of animation frames */
+	SDL_Rect *frames;      /* frames array */
 	size_t length;         /* number of frames in animation */
 	unsigned int index;    /* index of current frame in animation */
 	unsigned int reset;    /* index to reset to upon reaching the end of the frames array */
