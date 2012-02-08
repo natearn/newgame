@@ -115,6 +115,20 @@ int Redraw( SDL_Surface *screen, GameState *game ) {
 	return 0;
 }
 
+/* makes HandleInput smaller for one of my samples */
+void SampleHelper( GameState* game, SDL_Event* event, unsigned int index ) {
+	if( event->type == SDL_KEYDOWN ) {
+		StopAnimation( game->player->currentAnimation );
+		game->player->currentAnimation = &(game->player->animations[index]);
+		NextFrame( game->player->currentAnimation );
+		StartAnimation( game->player->currentAnimation, 200 );
+		cpBodySetVel( game->player->body, cpv( (index==1?50:(index==3?-50:0)), (index==2?50:(index==0?-50:0)) ));
+	} else {
+		StopAnimation( &(game->player->animations[index]) );
+		cpBodySetVel( game->player->body, cpv( 0, 0 ));
+	}
+}
+
 /* mutates the game state based on the input event */
 void HandleInput( GameState *game, SDL_Event *event ) {
 	SDL_Event opt;
@@ -128,41 +142,16 @@ void HandleInput( GameState *game, SDL_Event *event ) {
 	/* XXX: this is temporary to work with one of my samples */
 	switch( event->key.keysym.sym ) {
 		case SDLK_LEFT:
-			if( event->type == SDL_KEYDOWN ) {
-				StopAnimation( game->player->currentAnimation );
-				game->player->currentAnimation = &(game->player->animations[3]);
-				StartAnimation( game->player->currentAnimation, 200 );
-			} else {
-				StopAnimation( &(game->player->animations[3]) );
-			}
+			SampleHelper( game, event, 3 );
 			break;
 		case SDLK_RIGHT:
-			if( event->type == SDL_KEYDOWN ) {
-				StopAnimation( game->player->currentAnimation );
-				game->player->currentAnimation = &(game->player->animations[1]);
-				StartAnimation( game->player->currentAnimation, 200 );
-			} else {
-				StopAnimation( &(game->player->animations[1]) );
-			}
-			break;
+			SampleHelper( game, event, 1 );
 			break;
 		case SDLK_UP:
-			if( event->type == SDL_KEYDOWN ) {
-				StopAnimation( game->player->currentAnimation );
-				game->player->currentAnimation = &(game->player->animations[0]);
-				StartAnimation( game->player->currentAnimation, 200 );
-			} else {
-				StopAnimation( &(game->player->animations[0]) );
-			}
+			SampleHelper( game, event, 0 );
 			break;
 		case SDLK_DOWN:
-			if( event->type == SDL_KEYDOWN ) {
-				StopAnimation( game->player->currentAnimation );
-				game->player->currentAnimation = &(game->player->animations[2]);
-				StartAnimation( game->player->currentAnimation, 200 );
-			} else {
-				StopAnimation( &(game->player->animations[2]) );
-			}
+			SampleHelper( game, event, 2 );
 			break;
 		default:
 			break;
