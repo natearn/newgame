@@ -19,3 +19,10 @@
 	- create a map data structure
 		- implement a map to test the design
 		- add maps to the game state spec (including loading and storing)
+
+	! this is an optimization
+	- Reorganize sprites and animations (yet again)
+		- There will be many animations that depend on a single surface
+		- There will be many sprites/entities that look the same (use the same surface and animations)
+		- need to separate the definition of an animation from an instance of one
+		* why not let bodies have sprites instead of sprites having bodies?

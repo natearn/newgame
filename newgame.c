@@ -7,7 +7,7 @@
 #include "chipmunk/chipmunk_private.h"
 #include "animation.h"
 #include "sprite.h"
-//#include "gamestate.h"
+#include "gamestate.h"
 
 #define FRAME_RATE 60
 #define SIM_RATE 60 /* granularity of physics simulation. Increasing this improves precision while increasing cpu usage. Recommend matching FRAME_RATE */
@@ -15,22 +15,6 @@
 /* custom events */
 #define REDRAW_EVENT 1
 #define SIMULATE_EVENT 2
-
-struct _SpriteList {
-	Sprite *sprite;
-	struct _SpriteList *next;
-};
-typedef struct _SpriteList SpriteList;
-
-typedef struct {
-	SpriteList *sprites;
-	Sprite *player;
-	cpSpace *space;
-#if 0
-	DisplaySettings *display;
-	Map *map;
-#endif
-} GameState;
 
 /* formats a colour value to work correctly on a surface, fmt is the pixel format of the surface */
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {

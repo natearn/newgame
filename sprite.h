@@ -4,10 +4,9 @@
 #include <SDL/SDL.h>
 #include <chipmunk/chipmunk.h>
 
-/* load sprite from file
-	1. construct an uninitialized Animations array from the length of the "animations" sequence
-	2. CreateSprite with the animations array
-	3. iterate over the "animations" sequence, calling InitAnimation with the animation parameters
+/* TODO: replace variable size array of animations with
+         fixed-size array of animation pointers and some
+         defined constant indexes for existing actions
 */
 
 /* Sprite */
@@ -22,6 +21,13 @@ typedef struct {
 	size_t numShapes;
 #endif
 } Sprite;
+
+/* linked list of sprites */
+struct _SpriteList {
+	Sprite *sprite;
+	struct _SpriteList *next;
+};
+typedef struct _SpriteList SpriteList;
 
 /* allocate and initialize a sprite */
 Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body );
