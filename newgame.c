@@ -109,6 +109,7 @@ void SampleHelper( GameState* game, SDL_Event* event, unsigned int index ) {
 		cpBodySetVel( game->player->body, cpv( (index==1?50:(index==3?-50:0)), (index==2?50:(index==0?-50:0)) ));
 	} else {
 		StopAnimation( &(game->player->animations[index]) );
+		game->player->animations[index].index = game->player->animations[index].reset;
 		cpBodySetVel( game->player->body, cpv( 0, 0 ));
 	}
 }
@@ -267,28 +268,28 @@ int main( int argc, char *argv[] ) {
 	//cpShapeSetCollisionType( shape, 1 );
 
 	SDL_Rect frames[] = {
+	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*0,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*1,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*3,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	};
 	Animation anims[4];
-	InitAnimation( &anims[0], 4, 1, 0, &frames[4*0] ); /* up */
-	InitAnimation( &anims[1], 4, 1, 0, &frames[4*1] ); /* right */
-	InitAnimation( &anims[2], 4, 1, 0, &frames[4*2] ); /* down */
-	InitAnimation( &anims[3], 4, 1, 0, &frames[4*3] ); /* left */
+	InitAnimation( &anims[0], 4, 0, 0, &frames[4*0] ); /* up */
+	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] ); /* right */
+	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] ); /* down */
+	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] ); /* left */
 
 	Sprite *player = CreateSprite( LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body );
 	SpriteList list = {.sprite = player, .next = NULL};
