@@ -59,10 +59,4 @@ void UpdateAnimation( Animation *anim, Uint32 time );
 /* update the animation index and return the offset frame */
 SDL_Rect *GetFrame( Animation *anim );
 
-#if 0
-/* draw the animation onto the surface */
-/* if the animation has an interval > 0, then the index is updated before drawing */
-int DrawAnimation( Animation *anim, SDL_Surface *surface, SDL_Rect *posn );
-#endif
-
 #endif /* _ANIMATION_H_ */
