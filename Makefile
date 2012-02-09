@@ -11,6 +11,6 @@ tags: *.[hc]
 	ctags $^
 
 clean:
-	$(RM) newgame *.o tags
+	$(RM) newgame *.o
 
 .PHONY: all clean
