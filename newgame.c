@@ -8,6 +8,7 @@
 #include "animation.h"
 #include "sprite.h"
 #include "gamestate.h"
+#include "action.h"
 
 #define FRAME_RATE 60
 #define SIM_RATE 60 /* granularity of physics simulation. Increasing this improves precision while increasing cpu usage. Recommend matching FRAME_RATE */
@@ -97,50 +98,6 @@ int Redraw( SDL_Surface *screen, GameState *game ) {
 		return -1;
 	}
 	return 0;
-}
-
-/* makes HandleInput smaller for one of my samples */
-void SampleHelper( GameState* game, SDL_Event* event, unsigned int index ) {
-	if( event->type == SDL_KEYDOWN ) {
-		StopAnimation( game->player->currentAnimation );
-		game->player->currentAnimation = &(game->player->animations[index]);
-		NextFrame( game->player->currentAnimation );
-		StartAnimation( game->player->currentAnimation, 200 );
-		cpBodySetVel( game->player->body, cpv( (index==1?50:(index==3?-50:0)), (index==2?50:(index==0?-50:0)) ));
-	} else {
-		StopAnimation( &(game->player->animations[index]) );
-		game->player->animations[index].index = game->player->animations[index].reset;
-		cpBodySetVel( game->player->body, cpv( 0, 0 ));
-	}
-}
-
-/* mutates the game state based on the input event */
-void HandleInput( GameState *game, SDL_Event *event ) {
-	SDL_Event opt;
-	if( event->key.keysym.sym == SDLK_q && (event->key.keysym.mod & KMOD_CTRL) ) {
-		opt.type = SDL_QUIT;
-		if( SDL_PushEvent( &opt ) ) {
-			fprintf(stderr,"PushRedraw: Failure to push SDL_QUIT onto event queue\n");
-			exit(EXIT_FAILURE);
-		}
-	}
-	/* XXX: this is temporary to work with one of my samples */
-	switch( event->key.keysym.sym ) {
-		case SDLK_LEFT:
-			SampleHelper( game, event, 3 );
-			break;
-		case SDLK_RIGHT:
-			SampleHelper( game, event, 1 );
-			break;
-		case SDLK_UP:
-			SampleHelper( game, event, 0 );
-			break;
-		case SDLK_DOWN:
-			SampleHelper( game, event, 2 );
-			break;
-		default:
-			break;
-	}
 }
 
 /* EventHandler
@@ -268,33 +225,36 @@ int main( int argc, char *argv[] ) {
 	//cpShapeSetCollisionType( shape, 1 );
 
 	SDL_Rect frames[] = {
-	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
-	                      {.x=16*1,.y=180+18*0,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
-	                      {.x=16*3,.y=180+18*0,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
-	                      {.x=16*1,.y=180+18*1,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
-	                      {.x=16*3,.y=180+18*1,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
-	                      {.x=16*1,.y=180+18*2,.w=16,.h=18},
-	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
-	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
+	                      /* left */
 	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*3,.w=16,.h=18},
+	                      /* right */
+	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
+	                      {.x=16*1,.y=180+18*1,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
+	                      {.x=16*3,.y=180+18*1,.w=16,.h=18},
+	                      /* up */
+	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
+	                      {.x=16*1,.y=180+18*0,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
+	                      {.x=16*3,.y=180+18*0,.w=16,.h=18},
+	                      /* down */
+	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
+	                      {.x=16*1,.y=180+18*2,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
+	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
 	};
 	Animation anims[4];
-	InitAnimation( &anims[0], 4, 0, 0, &frames[4*0] ); /* up */
-	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] ); /* right */
-	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] ); /* down */
-	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] ); /* left */
+	InitAnimation( &anims[0], 4, 0, 0, &frames[4*0] );
+	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
+	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
+	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
 
 	Sprite *player = CreateSprite( LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body );
 	SpriteList list = {.sprite = player, .next = NULL};
 	game.sprites = &list;
-	//StartAnimation( player->currentAnimation, 250 );
 	game.player = player;
 #endif
 

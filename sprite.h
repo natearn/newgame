@@ -3,6 +3,7 @@
 
 #include <SDL/SDL.h>
 #include <chipmunk/chipmunk.h>
+#include "animation.h"
 
 /* TODO: replace variable size array of animations with
          fixed-size array of animation pointers and some
