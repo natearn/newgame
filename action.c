@@ -55,18 +55,25 @@ void HandleInput( GameState *game, SDL_Event *event ) {
 
 /* action helpers */
 
-/* does not allow diagonal movement yet */
+/* player movements */
 void MoveAction( GameState* game, unsigned int id, unsigned int state ) {
-	unsigned int index = id - 1;
-	if( state == ACTION_ON ) {
-		StopAnimation( game->player->currentAnimation );
-		game->player->currentAnimation = &(game->player->animations[index]);
-		NextFrame( game->player->currentAnimation );
-		StartAnimation( game->player->currentAnimation, 200 );
-		cpBodySetVel( game->player->body, cpv( (index==1?50:(index==0?-50:0)), (index==3?50:(index==2?-50:0)) ));
-	} else {
-		StopAnimation( &(game->player->animations[index]) );
-		game->player->animations[index].index = game->player->animations[index].reset;
-		if( game->player->currentAnimation == &(game->player->animations[index])) cpBodySetVel( game->player->body, cpv( 0, 0 ));
+
+	/* this belongs in the entity struct */
+	static unsigned int moves[4] = {0,0,0,0};
+	assert(id > 0);
+	moves[id-1] = state;
+
+	cpBodySetVel( game->player->body, cpv( 0, 0 ));
+	StopAnimation( game->player->currentAnimation );
+	for(unsigned int i=0; i < 4; i++) {
+		if( moves[i] ) {
+			StopAnimation( game->player->currentAnimation );
+			game->player->currentAnimation = &(game->player->animations[i]);
+			NextFrame( game->player->currentAnimation );
+			StartAnimation( game->player->currentAnimation, 150 );
+			cpBodySetVel( game->player->body, cpvadd( game->player->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
+		}
 	}
+	/* if not moving, reset the animation to idle */
+	if( !game->player->currentAnimation->interval ) game->player->currentAnimation->index = game->player->currentAnimation->reset;
 }
