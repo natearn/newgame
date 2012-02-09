@@ -256,6 +256,16 @@ int main( int argc, char *argv[] ) {
 	SpriteList list = {.sprite = player, .next = NULL};
 	game.sprites = &list;
 	game.player = player;
+
+#if 0
+	/* add some kind of background */
+	SDL_Rect bgframe = { 0, 0, 640, 480 };
+	Animation bganim;
+	InitAnimation( &bganim, 1, 0, 0, &bgframe );
+	Sprite *background = CreateSprite( LoadSpriteSheet( "../art/2D Circle Graphic Archive/TEST7B.bmp", 0x1 ), 1, &bganim, 0, NULL );
+	SpriteList bglist = { .sprite = background, .next = &list };
+	game.sprites = &bglist;
+#endif
 #endif
 
 	/* Run Event Loop */

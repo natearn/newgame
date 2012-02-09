@@ -45,7 +45,7 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
 	assert(sprite);
 	assert(surface);
 	SDL_Rect *frame;
-	SDL_Rect posn;
+	SDL_Rect posn = {0,0,0,0};
 	cpVect offset;
 
 	/* get animation frame */
@@ -55,7 +55,7 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
 	/* get the sprite position */
 	/* TODO: calculated offset to center of grav */
 	offset = cpvzero;
-	posn = Vect2Rect( cpvadd( offset, cpBodyGetPos( sprite->body )));
+	if( sprite->body ) posn = Vect2Rect( cpvadd( offset, cpBodyGetPos( sprite->body )));
 
 	/* blit */
 	if( SDL_BlitSurface( sprite->surface, frame, surface, &posn )) {
