@@ -8,14 +8,20 @@
 /* example YAML format for an animation
 	sprite: {
 		name     : zombie,
-		position : [12,98],
-		surface  : surface_file_name,
+		surface  : zombie.png,
 		animations: [
-			{
-				name     : walk_right
-				length   : 4,
-				index    : 2,
-				reset    : 2,
+			MOVE_LEFT : {
+				index    : 0,
+				reset    : 1,
+				interval : 300,
+				frame    : [
+					{ x, y, w, h },
+					{ x, y, w, h },
+				],
+			},
+			MOVE_RIGHT : {
+				index    : 0,
+				reset    : 1,
 				interval : 300,
 				frame    : [
 					{ x, y, w, h },
@@ -43,7 +49,7 @@ Animation *CreateAnimation( size_t length, unsigned int start, unsigned int rese
 /* Initialize an existing animation, length must be equal to the size of the frames array */
 Animation *InitAnimation( Animation *anim, size_t length, unsigned int start, unsigned int reset, SDL_Rect *frames );
 
-/* free the animation frames array, does not free SDL_Surfaces */
+/* free the animation frames array */
 void FreeAnimation( Animation *anim );
 
 /* changes the animation interval to i and sets init to SDL_GetTicks() */
@@ -56,7 +62,7 @@ int NextFrame( Animation* anim );
 /* update the animation index for the new time */
 void UpdateAnimation( Animation *anim, Uint32 time );
 
-/* update the animation index and return the offset frame */
+/* update the animation index and return the current frame */
 SDL_Rect *GetFrame( Animation *anim );
 
 #endif /* _ANIMATION_H_ */
