@@ -5,7 +5,7 @@
 #include <assert.h>
 
 /* private function prototypes */
-void MoveAction( GameState* game, unsigned int id, unsigned int state );
+void MoveAction( struct GameState* game, unsigned int id, unsigned int state );
 
 /* mapping table */
 /* TODO: replace this with something more expressive */
@@ -37,7 +37,7 @@ unsigned int GetAction( SDL_Event *event ) {
 }
 
 /* action handler */
-void HandleInput( GameState *game, SDL_Event *event ) {
+void HandleInput( struct GameState *game, SDL_Event *event ) {
 	unsigned int action_id = GetAction( event );
 	unsigned int action_state = ( event->type == SDL_KEYDOWN );
 	switch( action_id ) {
@@ -55,7 +55,8 @@ void HandleInput( GameState *game, SDL_Event *event ) {
 /* action helpers */
 
 /* player movements */
-void MoveAction( GameState* game, unsigned int id, unsigned int state ) {
+/* XXX: this is really gross, need to create a clean interface instead of reaching into the implementations of these structures */
+void MoveAction( struct GameState* game, unsigned int id, unsigned int state ) {
 
 	/* this belongs in the entity struct */
 	static unsigned int moves[4] = {0,0,0,0};
@@ -63,16 +64,16 @@ void MoveAction( GameState* game, unsigned int id, unsigned int state ) {
 	moves[id-1] = state;
 
 	cpBodySetVel( game->player->body, cpv( 0, 0 ));
-	StopAnimation( game->player->currentAnimation );
+	StopAnimation( game->player->sprite->currentAnimation );
 	for(unsigned int i=0; i < 4; i++) {
 		if( moves[i] ) {
-			StopAnimation( game->player->currentAnimation );
-			game->player->currentAnimation = &(game->player->animations[i]);
-			NextFrame( game->player->currentAnimation );
-			StartAnimation( game->player->currentAnimation, 150 );
+			StopAnimation( game->player->sprite->currentAnimation );
+			game->player->sprite->currentAnimation = &(game->player->sprite->animations[i]);
+			NextFrame( game->player->sprite->currentAnimation );
+			StartAnimation( game->player->sprite->currentAnimation, 150 );
 			cpBodySetVel( game->player->body, cpvadd( game->player->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
 		}
 	}
 	/* if not moving, reset the animation to idle */
-	if( !game->player->currentAnimation->interval ) game->player->currentAnimation->index = game->player->currentAnimation->reset;
+	if( !game->player->sprite->currentAnimation->interval ) game->player->sprite->currentAnimation->index = game->player->sprite->currentAnimation->reset;
 }

@@ -36,6 +36,6 @@
 #define NUM_ACTIONS 15
 
 unsigned int GetAction( SDL_Event *event );
-void HandleInput( GameState *game, SDL_Event *event );
+void HandleInput( struct GameState *game, SDL_Event *event );
 
 #endif /* _ACTION_H_ */

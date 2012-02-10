@@ -4,7 +4,6 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "chipmunk/chipmunk.h"
-#include "chipmunk/chipmunk_private.h"
 #include "animation.h"
 #include "sprite.h"
 #include "gamestate.h"
@@ -17,11 +16,13 @@
 
 /* formats a colour value to work correctly on a surface, fmt is the pixel format of the surface */
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
+	assert( fmt );
 	return SDL_MapRGB( fmt, (colour & 0xff0000) >> 16, (colour & 0x00ff00) >> 8, (colour & 0x0000ff) );
 }
 
 /* create a display-ready SDL_Sufrace* from image file, "colour" is a colour value which is made transparent (for sprite sheets) */
 SDL_Surface *LoadSpriteSheet( const char *file, Uint32 colour ) {
+	assert( file );
 	SDL_Surface *sprites = NULL;
 	SDL_Surface *format = NULL;
 	/* load the file */
@@ -49,6 +50,7 @@ lss_error:
 	This is the callback used to queue-up a redraw event. Param should point to
 	the frames-per-second that the game should be running at. See SDL_AddTimer
 	for details.
+	XXX: need atomic read/write or this isn't safe
 */
 Uint32 PushRedraw( Uint32 interval, void *param ) {
 		SDL_Event event;
@@ -63,20 +65,13 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 }
 
 /* Redraw
-	iterates over (stack), blitting each Sprite to (screen) with the
-	DrawSprite method, then flips the screen.
+	Renders the game state, then flips the screen.
 */
-int Redraw( SDL_Surface *screen, GameState *game ) {
-	/* draw the map (game->map)*/
-	SDL_FillRect( screen, NULL, 0x0 ); /* temporary: fill screen black */
-	/* draw the sprites (game->sprites)*/
-	for(SpriteList *list=game->sprites; list; list = list->next) {
-		if( DrawSprite( list->sprite, screen )) {
-			/* DrawSprite has its own error messages */
-			return -1;
-		}
+int Redraw( struct GameState *game, SDL_Surface *screen ) {
+	assert( game && screen );
+	if( RenderGameState( game, screen )) {
+		return -1;
 	}
-	/* flip screen */
 	if( SDL_Flip(screen) ) {
 		fprintf(stderr,"Redraw: error from SDL_Flip()\n");
 		return -1;
@@ -89,7 +84,8 @@ int Redraw( SDL_Surface *screen, GameState *game ) {
 	queue and then handles them appropriately. The manager should return when
 	it receives the SDL_Quit event. Returns -1 on failure (control flow error)
 */
-int EventHandler( SDL_Surface *screen, GameState *game ) {
+int EventHandler( struct GameState *game, SDL_Surface *screen ) {
+	assert( game && screen );
 	SDL_Event event;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -100,9 +96,9 @@ int EventHandler( SDL_Surface *screen, GameState *game ) {
 					case REDRAW_EVENT: 
 						/* TODO: wrap this all up into a helper... maybe. */
 						/* TODO: incremental physics update */
-						cpSpaceStep( game->space, 1.0/FRAME_RATE );
+						//cpSpaceStep( game->space, 1.0/FRAME_RATE );
 						/* TODO: conditional frame drop */
-						if( Redraw( screen, game ) ) {
+						if( Redraw( game, screen ) ) {
 							exit(EXIT_FAILURE);
 						}
 						break;
@@ -153,7 +149,7 @@ int main( int argc, char *argv[] ) {
 	SDL_Surface *screen = NULL;
 	SDL_TimerID redraw_id;
 	unsigned int frameRate = FRAME_RATE;
-	GameState game;
+	struct GameState game;
 
 	/* program arguments currently unused */
 	(void)argc;
@@ -225,11 +221,11 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
 	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
 	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
-
-	Sprite *player = CreateSprite( LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body );
-	SpriteList list = {.sprite = player, .next = NULL};
-	game.sprites = &list;
-	game.player = player;
+	Sprite playersprite; InitSprite( &playersprite, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body );
+	Entity player; InitEntity( &player, cpv( 50.0, 50.0 ), &playersprite, body );
+	struct EntityList list = {.entity = &player, .next = NULL};
+	game.entities = &list;
+	game.player = &player;
 
 #if 0
 	/* add some kind of background */
@@ -243,7 +239,7 @@ int main( int argc, char *argv[] ) {
 #endif
 
 	/* Run Event Loop */
-	if(EventHandler(screen,&game)) {
+	if(EventHandler(&game,screen)) {
 		exit(EXIT_FAILURE);
 	}
 

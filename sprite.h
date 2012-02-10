@@ -41,5 +41,6 @@ void FreeSprite( Sprite *sprite );
 
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface );
+int RenderSprite( Sprite *sprite, SDL_Surface *surface, SDL_Rect *posn );
 
 #endif /* _SPRITE_H_ */

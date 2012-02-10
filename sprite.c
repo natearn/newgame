@@ -64,3 +64,9 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
 	}
 	return 0;
 }
+
+/* tempory implementation */
+int RenderSprite( Sprite *sprite, SDL_Surface *surface, SDL_Rect *posn ) {
+	(void)posn;
+	return DrawSprite( sprite, surface );
+}
