@@ -11,11 +11,9 @@
 #include "action.h"
 
 #define FRAME_RATE 60
-#define SIM_RATE 60 /* granularity of physics simulation. Increasing this improves precision while increasing cpu usage. Recommend matching FRAME_RATE */
 
 /* custom events */
 #define REDRAW_EVENT 1
-#define SIMULATE_EVENT 2
 
 /* formats a colour value to work correctly on a surface, fmt is the pixel format of the surface */
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
@@ -64,20 +62,6 @@ Uint32 PushRedraw( Uint32 interval, void *param ) {
 		return ( param ? 1000 / *((unsigned int*)param) : interval );
 }
 
-/* push a SIMULATE_EVENT onto the event queue */
-Uint32 PushSimulate( Uint32 interval, void *param ) {
-		SDL_Event event;
-		event.type = SDL_USEREVENT;
-		event.user.code = SIMULATE_EVENT;
-		event.user.data1 = NULL;
-		event.user.data2 = NULL;
-		if( SDL_PushEvent( &event ) ) {
-			fprintf(stderr,"PushSimulate: Failure to push SIMULATE_EVENT on to event queue\n");
-		}
-		(void)param;
-		return interval;
-}
-
 /* Redraw
 	iterates over (stack), blitting each Sprite to (screen) with the
 	DrawSprite method, then flips the screen.
@@ -114,12 +98,13 @@ int EventHandler( SDL_Surface *screen, GameState *game ) {
 			case SDL_USEREVENT:
 				switch( event.user.code ) {
 					case REDRAW_EVENT: 
+						/* TODO: wrap this all up into a helper... maybe. */
+						/* TODO: incremental physics update */
+						cpSpaceStep( game->space, 1.0/FRAME_RATE );
+						/* TODO: conditional frame drop */
 						if( Redraw( screen, game ) ) {
 							exit(EXIT_FAILURE);
 						}
-						break;
-					case SIMULATE_EVENT: 
-						cpSpaceStep( game->space, 1.0/SIM_RATE );
 						break;
 					default:
 						break;
@@ -166,8 +151,8 @@ int main( int argc, char *argv[] ) {
 
 	/* vars */
 	SDL_Surface *screen = NULL;
-	SDL_TimerID redraw_id, simulate_id;
-	unsigned int *frameRate;
+	SDL_TimerID redraw_id;
+	unsigned int frameRate = FRAME_RATE;
 	GameState game;
 
 	/* program arguments currently unused */
@@ -197,19 +182,8 @@ int main( int argc, char *argv[] ) {
 	/* set the window caption */
 	SDL_WM_SetCaption( "newgame", NULL );
 
-	/* register physics simulation timer */
-	if( !(simulate_id = SDL_AddTimer( 1000/SIM_RATE, PushSimulate, NULL )) ) {
-		fprintf(stderr,"failure to add timer\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* register redraw timer event. framerate must be on the heap because it may be accessed from other threads */
-	if(!(frameRate = malloc(sizeof(*frameRate)))) {
-		fprintf(stderr,"malloc failure (out of memory)\n");
-		exit(EXIT_FAILURE);
-	}
-	*frameRate = FRAME_RATE;
-	if( !(redraw_id = SDL_AddTimer( 1000/(*frameRate), PushRedraw, frameRate )) ) {
+	/* register redraw timer event */
+	if( !(redraw_id = SDL_AddTimer( 1000/frameRate, PushRedraw, &frameRate )) ) {
 		fprintf(stderr,"failure to add timer\n");
 		exit(EXIT_FAILURE);
 	}
