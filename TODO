@@ -1,23 +1,11 @@
 	- implement incremental physics update and remove timer
-	- implement variable frame rate by adjusting timer interval in the redraw handler
 	- create a data structure for full game state (used for saving/loading games)
-		- all shared data is kept in this structure
-		- add keyboard controls to game state through a callback function (HandleInputEvent(gamestate,event))
 		- serialize with YAML!
 		- create methods for saving and loading game state
-	- create an abstraction layer around keyboard inputs so that I can later add configurable key mappings
-		actions(15):
-			- move up/down/left/right
-			- strike
-			- charge
-			- dodge
-			- block
-			- skill 1/2/3/4
-			- menu
-			- cancel
 	- create a map data structure
 		- implement a map to test the design
 		- add maps to the game state spec (including loading and storing)
+	- implement variable frame rate by adjusting timer interval in the redraw handler
 	! this is an optimization
 	- Reorganize sprites and animations (yet again)
 		- There will be many animations that depend on a single surface
