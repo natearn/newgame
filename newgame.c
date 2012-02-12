@@ -9,10 +9,13 @@
 #include "gamestate.h"
 #include "action.h"
 
-#define FRAME_RATE 60
+/* XXX: sleep granularity is 10ms, but calculations are down with 1ms */
+#define MAX_WAIT_TIME 33 /* maximum ms delay between redraws */
+#define MIN_WAIT_TIME 10 /* minimum ms delay between redraws */
+#define SIM_DELTA 50 /* ms per simulation update */
 
 /* custom events */
-#define REDRAW_EVENT 1
+#define RENDER_EVENT 1
 
 /* formats a colour value to work correctly on a surface, fmt is the pixel format of the surface */
 Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
@@ -46,28 +49,36 @@ lss_error:
 	return NULL; /* failure */
 }
 
-/* PushRedraw
-	This is the callback used to queue-up a redraw event. Param should point to
-	the frames-per-second that the game should be running at. See SDL_AddTimer
-	for details.
-	XXX: need atomic read/write or this isn't safe
-*/
-Uint32 PushRedraw( Uint32 interval, void *param ) {
-		SDL_Event event;
-		event.type = SDL_USEREVENT;
-		event.user.code = REDRAW_EVENT;
-		event.user.data1 = NULL;
-		event.user.data2 = NULL;
-		if( SDL_PushEvent( &event ) ) {
-			fprintf(stderr,"PushRedraw: Failure to push REDRAW_EVENT on to event queue\n");
-		}
-		return ( param ? 1000 / *((unsigned int*)param) : interval );
+/* push a generic user event onto the SDL event queue with given code (unused) */
+Uint32 PushUserEvent( Uint32 interval, void *param ) {
+	int code = (int)param;
+	SDL_Event event;
+	event.type = SDL_USEREVENT;
+	event.user.code = code;
+	event.user.data1 = NULL;
+	event.user.data2 = NULL;
+	if( SDL_PushEvent( &event ) ) {
+		fprintf(stderr,"PushUserEvent: Failure to push event onto event queue\n");
+	}
+	return interval;
 }
 
-/* Redraw
-	Renders the game state, then flips the screen.
-*/
-int Redraw( struct GameState *game, SDL_Surface *screen ) {
+/* push a RENDER_EVENT onto the SDL event queue */
+Uint32 PushRender( Uint32 interval, void *param ) {
+	(void)interval; (void)param;
+	SDL_Event event;
+	event.type = SDL_USEREVENT;
+	event.user.code = RENDER_EVENT;
+	event.user.data1 = NULL;
+	event.user.data2 = NULL;
+	if( SDL_PushEvent( &event ) ) {
+		fprintf(stderr,"PushRender: Failure to push event onto event queue\n");
+	}
+	return 0; /* only run once */
+}
+
+/* Renders the game state, then flips the screen. */
+int Render( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
 	if( RenderGameState( game, screen )) {
 		return -1;
@@ -79,6 +90,26 @@ int Redraw( struct GameState *game, SDL_Surface *screen ) {
 	return 0;
 }
 
+/* Incremental simulation updater. Returns the remaining time that was not simulated */
+unsigned int SimUpdate( cpSpace* space, unsigned int time, unsigned int delta ) {
+	assert( space );
+	unsigned int rem = time;
+	while( rem > delta ) {
+		cpSpaceStep( space, delta/1000.0 );
+		rem -= delta;
+	}
+	return rem;
+}
+
+/* calculate the amount of time to wait before queueing another RENDER_EVENT */
+unsigned int CalcWaitTime( unsigned int target, unsigned int delay, unsigned int min ) {
+	assert( target >= min );
+	if( delay > target - min ) {
+		return min;
+	}
+	return target - delay;
+}
+
 /* EventHandler
 	This routine runs the event manager, which waits for events in the event
 	queue and then handles them appropriately. The manager should return when
@@ -87,20 +118,34 @@ int Redraw( struct GameState *game, SDL_Surface *screen ) {
 int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
 	SDL_Event event;
+	SDL_TimerID redraw_id;
+	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, redrawTime = 0, frameTime = 0;
+	unsigned int frames = 0;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
 
 			/* user events */
 			case SDL_USEREVENT:
 				switch( event.user.code ) {
-					case REDRAW_EVENT: 
-						/* TODO: wrap this all up into a helper... maybe. */
-						/* TODO: incremental physics update */
-						//cpSpaceStep( game->space, 1.0/FRAME_RATE );
-						/* TODO: conditional frame drop */
-						if( Redraw( game, screen ) ) {
+					case RENDER_EVENT: 
+						thisTime = SDL_GetTicks();
+						frameTime = ((frameTime*frames)+(thisTime-lastTime))/(frames+1);
+						/* simulating the remainder right away instead of saving it */
+						cpSpaceStep( game->space, SimUpdate( game->space, thisTime - lastTime, SIM_DELTA )/1000.0 );
+						if( Render( game, screen ) ) {
 							exit(EXIT_FAILURE);
 						}
+						/* add new timer with calculated wait time */
+						/* XXX: this prevents flooding the queue with redraw events
+						        and gives me control over wait time */
+						if( !(redraw_id = SDL_AddTimer( (CalcWaitTime( MAX_WAIT_TIME, (SDL_GetTicks() - thisTime), MIN_WAIT_TIME )/10)*10, PushRender, NULL ))) {
+							fprintf(stderr,"failure to add timer\n");
+							return -1;
+						}
+						if(frames%10==5) fprintf(stderr," mpr:%d mpf:%d fps:%d\r",redrawTime,frameTime,1000/frameTime);
+						frames++;
+						lastTime = thisTime;
+						redrawTime = ((redrawTime*(frames-1))+(SDL_GetTicks()-thisTime))/frames;
 						break;
 					default:
 						break;
@@ -147,8 +192,6 @@ int main( int argc, char *argv[] ) {
 
 	/* vars */
 	SDL_Surface *screen = NULL;
-	SDL_TimerID redraw_id;
-	unsigned int frameRate = FRAME_RATE;
 	struct GameState game;
 
 	/* program arguments currently unused */
@@ -161,12 +204,8 @@ int main( int argc, char *argv[] ) {
 	cpInitChipmunk();
 
 	/* register SDL_Quit and IMG_Quit */
-	if( atexit(SDL_Quit) ) {
-		fprintf(stderr,"Unable to register SDL_Quit atexit\n");
-	}
-	if( atexit(IMG_Quit) ) {
-		fprintf(stderr,"Unable to register IMG_Quit atexit\n");
-	}
+	if( atexit(SDL_Quit) ) fprintf(stderr,"Unable to register SDL_Quit atexit\n");
+	if( atexit(IMG_Quit) ) fprintf(stderr,"Unable to register IMG_Quit atexit\n");
 
 	/* create window */
 	/* TODO: much of this needs to be configurable */
@@ -178,16 +217,10 @@ int main( int argc, char *argv[] ) {
 	/* set the window caption */
 	SDL_WM_SetCaption( "newgame", NULL );
 
-	/* register redraw timer event */
-	if( !(redraw_id = SDL_AddTimer( 1000/frameRate, PushRedraw, &frameRate )) ) {
-		fprintf(stderr,"failure to add timer\n");
-		exit(EXIT_FAILURE);
-	}
-
 	/* initialize game data */
+	game.space = cpSpaceNew();
 #if 1
 	/* this sample is a rpg sprite walking around */
-	game.space = cpSpaceNew();
 	cpBody *body = cpSpaceAddBody( game.space, cpBodyNew( 10.0, INFINITY ));
 	cpBodySetPos( body, cpv(50.0,50.0) );
 	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( body, 16.0, 12.0 ));
@@ -226,17 +259,10 @@ int main( int argc, char *argv[] ) {
 	struct EntityList list = {.entity = &player, .next = NULL};
 	game.entities = &list;
 	game.player = &player;
+#endif
 
-#if 0
-	/* add some kind of background */
-	SDL_Rect bgframe = { 0, 0, 640, 480 };
-	Animation bganim;
-	InitAnimation( &bganim, 1, 0, 0, &bgframe );
-	Sprite *background = CreateSprite( LoadSpriteSheet( "../art/2D Circle Graphic Archive/TEST7B.bmp", 0x1 ), 1, &bganim, 0, NULL );
-	SpriteList bglist = { .sprite = background, .next = &list };
-	game.sprites = &bglist;
-#endif
-#endif
+	/* push the first render event onto the queue */
+	PushRender(0,NULL);
 
 	/* Run Event Loop */
 	if(EventHandler(&game,screen)) {
