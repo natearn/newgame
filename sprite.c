@@ -9,17 +9,17 @@
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
 Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                      const unsigned int currentIndex, cpBody *body, cpVect posn ) {
+                      const unsigned int currentIndex, cpVect posn ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
 		return NULL;
 	}
-	return InitSprite( ret, surface, numAnimations, animations, currentIndex, body, posn );
+	return InitSprite( ret, surface, numAnimations, animations, currentIndex, posn );
 }
 
 Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                    const unsigned int currentIndex, cpBody *body, cpVect posn ) {
+                    const unsigned int currentIndex, cpVect posn ) {
 	assert(sprite);
 	sprite->surface = surface;
 	sprite->numAnimations = numAnimations;
@@ -29,7 +29,9 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	}
 	memcpy( sprite->animations, animations, numAnimations*sizeof(*animations) );
 	sprite->currentAnimation = &sprite->animations[currentIndex];
-	sprite->body = body;
+	/* TODO: no hard-coded constants, get these from user or header file definitions */
+	sprite->body = cpBodyNew( 10.0, INFINITY );
+	cpBodySetPos( sprite->body, posn );
 	sprite->posn = posn;
 	return sprite;
 }

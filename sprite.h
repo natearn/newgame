@@ -29,10 +29,10 @@ struct _SpriteList {
 typedef struct _SpriteList SpriteList;
 
 /* allocate and initialize a sprite */
-Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body, cpVect posn );
+Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpVect posn );
 
 /* initialize a sprite */
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body, cpVect posn );
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpVect posn );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );

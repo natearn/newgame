@@ -211,11 +211,6 @@ int main( int argc, char *argv[] ) {
 #if 1
 	/* this sample is a rpg sprite walking around */
 	InitGameState( &game );
-	cpBody *body = cpSpaceAddBody( game.space, cpBodyNew( 10.0, INFINITY ));
-	cpBodySetPos( body, cpv(50.0,50.0) );
-	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( body, 16.0, 12.0 ));
-	shape->collision_type = 1;
-	//cpShapeSetCollisionType( shape, 1 );
 
 	SDL_Rect frames[] = {
 	                      /* left */
@@ -244,10 +239,16 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
 	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
 	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
-	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body, cpv( 50.0, 50.0 ) );
+	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 50.0, 50.0 ) );
 	struct SpriteList list = {.sprite = &player, .next = NULL};
 	game.sprites = &list;
 	game.focus = &player;
+
+	/* TODO: move this into game state function */
+	cpSpaceAddBody( game.space, player.body );
+	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( player.body, 16.0, 12.0 ));
+	shape->collision_type = 1;
+	//cpShapeSetCollisionType( shape, 1 );
 #endif
 
 	/* push the first render event onto the queue */
