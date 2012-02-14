@@ -1,5 +1,4 @@
-	- build GameState and Sprite structures around chipmunk data structures (make it an implementation detail)
-		* moved cpSpaceStep into GameState routines
+	* build GameState and Sprite structures around chipmunk data structures (make it an implementation detail)
 	- create a data structure to hold SDL_Surface + animations (should be separate from game data, but may depend on game data)
 	- create a sprite sheet that has animations for all basic actions (rolling, attacking, blocking, charging)
 	- add game statistics to the sprite struct
