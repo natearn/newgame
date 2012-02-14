@@ -152,7 +152,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 			/* other events */
 			case SDL_QUIT:
 				/* autosave state here if desired */
-				fprintf(stderr,"SDL_QUIT\n");
+				fprintf(stderr,"\nSDL_QUIT\n");
 				return 0;
 			case SDL_VIDEORESIZE:
 				/* not being handled yet */
