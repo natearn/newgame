@@ -22,6 +22,8 @@ struct GameState {
 #endif
 };
 
+unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta );
+void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta );
 int RenderGameState( struct GameState *game, SDL_Surface *screen );
 #if 0
 /* serialization of game data to human-readable text files */

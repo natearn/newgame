@@ -131,7 +131,10 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 						thisTime = SDL_GetTicks();
 						frameTime = ((frameTime*frames)+(thisTime-lastTime))/(frames+1);
 						/* simulating the remainder right away instead of saving it */
+#if 0
 						cpSpaceStep( game->space, SimUpdate( game->space, thisTime - lastTime, SIM_DELTA )/1000.0 );
+#endif
+						UpdateGameStateFull( game, thisTime - lastTime, SIM_DELTA );
 						if( Render( game, screen ) ) {
 							exit(EXIT_FAILURE);
 						}

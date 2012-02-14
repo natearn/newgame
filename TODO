@@ -1,3 +1,2 @@
-	- replace screen_position and player in GameState with an focus (sprite)
 	- build GameState and Sprite structures around chipmunk data structures (make it an implementation detail)
 	- create a data structure to hold SDL_Surface + animations, this data structure should depend on GameState/Sprite (not the other way around)

@@ -3,6 +3,20 @@
 #include <chipmunk/chipmunk.h>
 #include <assert.h>
 
+unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta ) {
+	assert( game && game->space );
+	unsigned int rem = time;
+	while( rem > delta ) {
+		cpSpaceStep( game->space, delta/1000.0 );
+		rem -= delta;
+	}
+	return rem;
+}
+
+void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta ) {
+	cpSpaceStep( game->space, UpdateGameState(game,time,delta)/1000.0 );
+}
+
 int RenderGameState( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
