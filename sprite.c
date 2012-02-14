@@ -9,17 +9,17 @@
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
 Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                      const unsigned int currentIndex, cpBody *body ) {
+                      const unsigned int currentIndex, cpBody *body, cpVect posn ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
 		return NULL;
 	}
-	return InitSprite( ret, surface, numAnimations, animations, currentIndex, body );
+	return InitSprite( ret, surface, numAnimations, animations, currentIndex, body, posn );
 }
 
 Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                    const unsigned int currentIndex, cpBody *body ) {
+                    const unsigned int currentIndex, cpBody *body, cpVect posn ) {
 	assert(sprite);
 	sprite->surface = surface;
 	sprite->numAnimations = numAnimations;
@@ -30,6 +30,7 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	memcpy( sprite->animations, animations, numAnimations*sizeof(*animations) );
 	sprite->currentAnimation = &sprite->animations[currentIndex];
 	sprite->body = body;
+	sprite->posn = posn;
 	return sprite;
 }
 
@@ -63,10 +64,4 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
 		return -1;
 	}
 	return 0;
-}
-
-/* tempory implementation */
-int RenderSprite( Sprite *sprite, SDL_Surface *surface, SDL_Rect *posn ) {
-	(void)posn;
-	return DrawSprite( sprite, surface );
 }

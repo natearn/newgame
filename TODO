@@ -1,14 +1,3 @@
-	- implement incremental physics update and remove timer
-	- create a data structure for full game state (used for saving/loading games)
-		- serialize with YAML!
-		- create methods for saving and loading game state
-	- create a map data structure
-		- implement a map to test the design
-		- add maps to the game state spec (including loading and storing)
-	- implement variable frame rate by adjusting timer interval in the redraw handler
-	! this is an optimization
-	- Reorganize sprites and animations (yet again)
-		- There will be many animations that depend on a single surface
-		- There will be many sprites/entities that look the same (use the same surface and animations)
-		- need to separate the definition of an animation from an instance of one
-		* why not let bodies have sprites instead of sprites having bodies?
+	- replace screen_position and player in GameState with an focus (sprite)
+	- build GameState and Sprite structures around chipmunk data structures (make it an implementation detail)
+	- create a data structure to hold SDL_Surface + animations, this data structure should depend on GameState/Sprite (not the other way around)

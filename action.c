@@ -1,6 +1,7 @@
 #include "SDL.h"
 #include "action.h"
 #include "gamestate.h"
+#include "sprite.h"
 #include <stdio.h>
 #include <assert.h>
 
@@ -63,17 +64,17 @@ void MoveAction( struct GameState* game, unsigned int id, unsigned int state ) {
 	assert(id > 0);
 	moves[id-1] = state;
 
-	cpBodySetVel( game->player->body, cpv( 0, 0 ));
-	StopAnimation( game->player->sprite->currentAnimation );
+	cpBodySetVel( game->focus->body, cpv( 0, 0 ));
+	StopAnimation( game->focus->currentAnimation );
 	for(unsigned int i=0; i < 4; i++) {
 		if( moves[i] ) {
-			StopAnimation( game->player->sprite->currentAnimation );
-			game->player->sprite->currentAnimation = &(game->player->sprite->animations[i]);
-			NextFrame( game->player->sprite->currentAnimation );
-			StartAnimation( game->player->sprite->currentAnimation, 150 );
-			cpBodySetVel( game->player->body, cpvadd( game->player->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
+			StopAnimation( game->focus->currentAnimation );
+			game->focus->currentAnimation = &(game->focus->animations[i]);
+			NextFrame( game->focus->currentAnimation );
+			StartAnimation( game->focus->currentAnimation, 150 );
+			cpBodySetVel( game->focus->body, cpvadd( game->focus->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
 		}
 	}
 	/* if not moving, reset the animation to idle */
-	if( !game->player->sprite->currentAnimation->interval ) game->player->sprite->currentAnimation->index = game->player->sprite->currentAnimation->reset;
+	if( !game->focus->currentAnimation->interval ) game->focus->currentAnimation->index = game->focus->currentAnimation->reset;
 }

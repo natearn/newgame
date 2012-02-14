@@ -1,20 +1,19 @@
 #ifndef _GAMESTATE_H_
 #define _GAMESTATE_H_
 
-#include "entity.h"
+#include "sprite.h"
 #include <chipmunk/chipmunk.h>
 
-struct EntityList {
-	Entity *entity;
-	struct EntityList *next;
+struct SpriteList {
+	Sprite *sprite;
+	struct SpriteList *next;
 };
 
 /* all encompassing struct */
 struct GameState {
 	cpSpace *space; /* cpSpace for physics simulation */
-	Entity *player;
-	struct EntityList *entities;
-	cpVect screen_position;
+	Sprite *focus;
+	struct SpriteList *sprites;
 #if 0
 	Controls *controls; /* key mappings */
 	DisplaySettings *display; /* keep this separate? */

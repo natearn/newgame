@@ -219,9 +219,9 @@ int main( int argc, char *argv[] ) {
 	SDL_WM_SetCaption( "newgame", NULL );
 
 	/* initialize game data */
-	game.space = cpSpaceNew();
 #if 1
 	/* this sample is a rpg sprite walking around */
+	game.space = cpSpaceNew();
 	cpBody *body = cpSpaceAddBody( game.space, cpBodyNew( 10.0, INFINITY ));
 	cpBodySetPos( body, cpv(50.0,50.0) );
 	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( body, 16.0, 12.0 ));
@@ -255,11 +255,10 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
 	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
 	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
-	Sprite playersprite; InitSprite( &playersprite, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body );
-	Entity player; InitEntity( &player, cpv( 50.0, 50.0 ), &playersprite, body );
-	struct EntityList list = {.entity = &player, .next = NULL};
-	game.entities = &list;
-	game.player = &player;
+	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, body, cpv( 50.0, 50.0 ) );
+	struct SpriteList list = {.sprite = &player, .next = NULL};
+	game.sprites = &list;
+	game.focus = &player;
 #endif
 
 	/* push the first render event onto the queue */

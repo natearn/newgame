@@ -16,11 +16,9 @@ typedef struct {
 	Animation *animations;       /* array of animations */
 	size_t numAnimations;        /* size of animations array */
 	Animation *currentAnimation; /* pointer to active animation */
+
 	cpBody *body;                /* physical body of the sprite */
-#if 0
-	cpShape *shapes;
-	size_t numShapes;
-#endif
+	cpVect posn;
 } Sprite;
 
 /* linked list of sprites */
@@ -31,16 +29,15 @@ struct _SpriteList {
 typedef struct _SpriteList SpriteList;
 
 /* allocate and initialize a sprite */
-Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body );
+Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body, cpVect posn );
 
 /* initialize a sprite */
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body );
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpBody *body, cpVect posn );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );
 
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface );
-int RenderSprite( Sprite *sprite, SDL_Surface *surface, SDL_Rect *posn );
 
 #endif /* _SPRITE_H_ */
