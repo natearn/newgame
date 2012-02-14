@@ -90,17 +90,6 @@ int Render( struct GameState *game, SDL_Surface *screen ) {
 	return 0;
 }
 
-/* Incremental simulation updater. Returns the remaining time that was not simulated */
-unsigned int SimUpdate( cpSpace* space, unsigned int time, unsigned int delta ) {
-	assert( space );
-	unsigned int rem = time;
-	while( rem > delta ) {
-		cpSpaceStep( space, delta/1000.0 );
-		rem -= delta;
-	}
-	return rem;
-}
-
 /* calculate the amount of time to wait before queueing another RENDER_EVENT */
 unsigned int CalcWaitTime( unsigned int target, unsigned int delay, unsigned int min ) {
 	assert( target >= min );
@@ -131,9 +120,6 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 						thisTime = SDL_GetTicks();
 						frameTime = ((frameTime*frames)+(thisTime-lastTime))/(frames+1);
 						/* simulating the remainder right away instead of saving it */
-#if 0
-						cpSpaceStep( game->space, SimUpdate( game->space, thisTime - lastTime, SIM_DELTA )/1000.0 );
-#endif
 						UpdateGameStateFull( game, thisTime - lastTime, SIM_DELTA );
 						if( Render( game, screen ) ) {
 							exit(EXIT_FAILURE);
