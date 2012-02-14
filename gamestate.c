@@ -6,7 +6,6 @@
 GameState *InitGameState( GameState* game ) {
 	assert( game );
 	game->space = cpSpaceNew();
-	assert( game->space );
 	return game;
 }
 
