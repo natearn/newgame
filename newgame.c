@@ -210,7 +210,7 @@ int main( int argc, char *argv[] ) {
 	/* initialize game data */
 #if 1
 	/* this sample is a rpg sprite walking around */
-	game.space = cpSpaceNew();
+	InitGameState( &game );
 	cpBody *body = cpSpaceAddBody( game.space, cpBodyNew( 10.0, INFINITY ));
 	cpBodySetPos( body, cpv(50.0,50.0) );
 	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( body, 16.0, 12.0 ));

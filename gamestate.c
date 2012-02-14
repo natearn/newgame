@@ -3,6 +3,13 @@
 #include <chipmunk/chipmunk.h>
 #include <assert.h>
 
+GameState *InitGameState( GameState* game ) {
+	assert( game );
+	game->space = cpSpaceNew();
+	assert( game->space );
+	return game;
+}
+
 unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta ) {
 	assert( game && game->space );
 	unsigned int rem = time;

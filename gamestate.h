@@ -10,7 +10,7 @@ struct SpriteList {
 };
 
 /* all encompassing struct */
-struct GameState {
+typedef struct GameState {
 	cpSpace *space; /* cpSpace for physics simulation */
 	Sprite *focus;
 	struct SpriteList *sprites;
@@ -20,8 +20,9 @@ struct GameState {
 	Map *map; /* representation of the isometric map (non-interactive visuals) */
 	/* need a data structure for reusable surfaces/animations */
 #endif
-};
+} GameState;
 
+GameState *InitGameState( GameState* game );
 unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta );
 void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta );
 int RenderGameState( struct GameState *game, SDL_Surface *screen );
