@@ -118,8 +118,8 @@ unsigned int CalcWaitTime( unsigned int target, unsigned int delay, unsigned int
 int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
 	SDL_Event event;
-	SDL_TimerID redraw_id;
-	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, redrawTime = 0, frameTime = 0;
+	SDL_TimerID render_id;
+	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, renderTime = 0, frameTime = 0;
 	unsigned int frames = 0;
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -136,16 +136,17 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 							exit(EXIT_FAILURE);
 						}
 						/* add new timer with calculated wait time */
-						/* XXX: this prevents flooding the queue with redraw events
+						/* XXX: this prevents flooding the queue with render events
 						        and gives me control over wait time */
-						if( !(redraw_id = SDL_AddTimer( (CalcWaitTime( MAX_WAIT_TIME, (SDL_GetTicks() - thisTime), MIN_WAIT_TIME )/10)*10, PushRender, NULL ))) {
+						if( !(render_id = SDL_AddTimer( (CalcWaitTime( MAX_WAIT_TIME, (SDL_GetTicks() - thisTime), MIN_WAIT_TIME )/10)*10, PushRender, NULL ))) {
 							fprintf(stderr,"failure to add timer\n");
 							return -1;
 						}
+						/* occasionally print some statistics */
 						if(frames%10==5) fprintf(stderr," mpr:%d mpf:%d fps:%d\r",redrawTime,frameTime,1000/frameTime);
 						frames++;
 						lastTime = thisTime;
-						redrawTime = ((redrawTime*(frames-1))+(SDL_GetTicks()-thisTime))/frames;
+						renderTime = ((renderTime*(frames-1))+(SDL_GetTicks()-thisTime))/frames;
 						break;
 					default:
 						break;
