@@ -143,7 +143,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 							return -1;
 						}
 						/* occasionally print some statistics */
-						if(frames%10==5) fprintf(stderr," mpr:%d mpf:%d fps:%d\r",redrawTime,frameTime,1000/frameTime);
+						if(frames%10==5) fprintf(stderr," mpr:%d mpf:%d fps:%d\r",renderTime,frameTime,1000/frameTime);
 						frames++;
 						lastTime = thisTime;
 						renderTime = ((renderTime*(frames-1))+(SDL_GetTicks()-thisTime))/frames;
