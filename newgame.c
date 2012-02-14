@@ -239,16 +239,10 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
 	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
 	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
-	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 50.0, 50.0 ) );
-	struct SpriteList list = {.sprite = &player, .next = NULL};
-	game.sprites = &list;
+	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ) );
 	game.focus = &player;
 
-	/* TODO: move this into game state function */
-	cpSpaceAddBody( game.space, player.body );
-	cpShape *shape = cpSpaceAddShape( game.space, cpBoxShapeNew( player.body, 16.0, 12.0 ));
-	shape->collision_type = 1;
-	//cpShapeSetCollisionType( shape, 1 );
+	AddSprite( &game, &player, cpv( 50, 50 ));
 #endif
 
 	/* push the first render event onto the queue */

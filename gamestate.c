@@ -2,10 +2,12 @@
 #include "sprite.h"
 #include <chipmunk/chipmunk.h>
 #include <assert.h>
+#include <stdio.h>
 
-GameState *InitGameState( GameState* game ) {
+struct GameState *InitGameState( struct GameState* game ) {
 	assert( game );
 	game->space = cpSpaceNew();
+	game->sprites = NULL;
 	return game;
 }
 
@@ -21,6 +23,26 @@ unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigne
 
 void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta ) {
 	cpSpaceStep( game->space, UpdateGameState(game,time,delta)/1000.0 );
+}
+
+static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite ) {
+	struct SpriteList *elem = NULL;
+	if(!(elem = malloc(sizeof(*elem)))) {
+		fprintf(stderr,"GameState: InsertSprite: malloc failed\n");
+		return NULL;
+	}
+	elem->sprite = sprite;
+	elem->next = game->sprites;
+	game->sprites = elem;
+	return elem;
+}
+
+int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
+	if(!InsertSprite( game, sprite )) return -1;
+	cpBodySetPos( sprite->body, posn );
+	cpSpaceAddBody( game->space, sprite->body );
+	cpSpaceAddShape( game->space, sprite->shape );
+	return 0;
 }
 
 int RenderGameState( struct GameState *game, SDL_Surface *screen ) {
