@@ -239,6 +239,7 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
 	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
 	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
+
 	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ) );
 	game.focus = &player;
 

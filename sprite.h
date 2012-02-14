@@ -17,10 +17,21 @@ typedef struct {
 	size_t numAnimations;        /* size of animations array */
 	Animation *currentAnimation; /* pointer to active animation */
 
+	/* physics data */
 	cpBody *body;                /* physical body of the sprite */
 	cpShape *shape;              /* box shape */
 	cpVect size;                 /* size of box */
 	cpVect posn;                 /* position center of box */
+
+#if 0
+	/* eventually, this should be moved out of Sprite entirely  */
+	/* animation/frame data */
+	Resource *resource;
+	Animation *table[][][][];
+	Animation *curAnim;
+	unsigned int frame;
+	unsigned int time;
+#endif
 } Sprite;
 
 /* linked list of sprites */
