@@ -28,13 +28,13 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 		return NULL;
 	}
 	memcpy( sprite->animations, animations, numAnimations*sizeof(*animations) );
-	sprite->currentAnimation = &sprite->animations[currentIndex];
+	sprite->curAnim = &sprite->animations[currentIndex];
 	/* TODO: no hard-coded constants, get these from user or header file definitions */
 	sprite->body = cpBodyNew( 10.0, INFINITY );
 	cpBodySetPos( sprite->body, posn );
 	sprite->size = size;
 	sprite->posn = posn;
-	sprite->frame_index = 0;
+	sprite->index = 0;
 	sprite->time = 0;
 	sprite->shape = cpBoxShapeNew( sprite->body, size.x, size.y );
 	return sprite;
@@ -57,7 +57,7 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, unsigned int delta ) {
 
 	/* get animation frame */
 	sprite->time += delta;
-	frame = GetUpdatedFrame( sprite->currentAnimation, &sprite->frame_index, &sprite->time );
+	frame = GetUpdatedFrame( sprite->curAnim, &sprite->index, &sprite->time );
 
 	/* get the sprite position */
 	/* TODO: calculated offset to center of grav */

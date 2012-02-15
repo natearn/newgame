@@ -67,9 +67,9 @@ void MoveAction( struct GameState* game, unsigned int id, unsigned int state ) {
 	cpBodySetVel( game->focus->body, cpv( 0, 0 ));
 	for(unsigned int i=0; i < 4; i++) {
 		if( moves[i] ) {
-			if( game->focus->currentAnimation != &(game->focus->animations[i])) game->focus->frame_index = 0;
-			game->focus->currentAnimation = &(game->focus->animations[i]);
-			GetNextFrame( game->focus->currentAnimation, &game->focus->frame_index );
+			if( game->focus->curAnim != &(game->focus->animations[i])) game->focus->index = 0;
+			game->focus->curAnim = &(game->focus->animations[i]);
+			GetNextFrame( game->focus->curAnim, &game->focus->index );
 			cpBodySetVel( game->focus->body, cpvadd( game->focus->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
 		}
 	}

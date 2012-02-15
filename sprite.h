@@ -10,10 +10,6 @@ typedef struct {
 	SDL_Surface *surface;
 	Animation *animations;       /* array of animations */
 	size_t numAnimations;        /* size of animations array */
-	Animation *currentAnimation; /* pointer to active animation */
-
-	size_t frame_index;          /* index of recent frame in animation */
-	unsigned int time;                 /* time stamp of last animation update */
 
 	/* physics data */
 	cpBody *body;                /* physical body of the sprite */
@@ -26,10 +22,10 @@ typedef struct {
 	/* animation/frame data */
 	Resource *resource;
 	Animation *table[][][][];
-	Animation *curAnim;
-	unsigned int frame;
-	unsigned int time;
 #endif
+	Animation *curAnim;   /* current animation */
+	size_t index;         /* frame index */
+	unsigned int time;    /* remaining time to animate (this should always be less than the current animation interval) */
 } Sprite;
 
 /* linked list of sprites */
