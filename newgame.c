@@ -234,11 +234,17 @@ int main( int argc, char *argv[] ) {
 	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
 	};
-	Animation anims[4];
+	Animation anims[4+4];
+
 	InitAnimation( &anims[0], 4, &frames[4*0], 0, 200 );
 	InitAnimation( &anims[1], 4, &frames[4*1], 0, 200 );
 	InitAnimation( &anims[2], 4, &frames[4*2], 0, 200 );
 	InitAnimation( &anims[3], 4, &frames[4*3], 0, 200 );
+
+	InitAnimation( &anims[0+4], 1, &frames[4*0], 0, 0 );
+	InitAnimation( &anims[1+4], 1, &frames[4*1], 0, 0 );
+	InitAnimation( &anims[2+4], 1, &frames[4*2], 0, 0 );
+	InitAnimation( &anims[3+4], 1, &frames[4*3], 0, 0 );
 
 	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ) );
 	game.focus = &player;
