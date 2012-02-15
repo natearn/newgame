@@ -5,17 +5,15 @@
 #include <chipmunk/chipmunk.h>
 #include "animation.h"
 
-/* TODO: replace variable size array of animations with
-         fixed-size array of animation pointers and some
-         defined constant indexes for existing actions
-*/
-
 /* Sprite */
 typedef struct {
 	SDL_Surface *surface;
 	Animation *animations;       /* array of animations */
 	size_t numAnimations;        /* size of animations array */
 	Animation *currentAnimation; /* pointer to active animation */
+
+	size_t frame_index;          /* index of recent frame in animation */
+	unsigned int time;                 /* time stamp of last animation update */
 
 	/* physics data */
 	cpBody *body;                /* physical body of the sprite */
@@ -42,15 +40,15 @@ struct _SpriteList {
 typedef struct _SpriteList SpriteList;
 
 /* allocate and initialize a sprite */
-Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpVect size, cpVect posn );
+Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, size_t currentIndex, cpVect size, cpVect posn );
 
 /* initialize a sprite */
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, unsigned int currentIndex, cpVect size, cpVect posn );
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, size_t currentIndex, cpVect size, cpVect posn );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );
 
 /* draw the sprite on the surface */
-int DrawSprite( Sprite *sprite, SDL_Surface *surface );
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, unsigned int delta );
 
 #endif /* _SPRITE_H_ */

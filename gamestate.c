@@ -45,14 +45,14 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 	return 0;
 }
 
-int RenderGameState( struct GameState *game, SDL_Surface *screen ) {
+int RenderGameState( struct GameState *game, SDL_Surface *screen, unsigned int delta ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
 	/* render the map */
 	SDL_FillRect( screen, NULL, 0x0 ); /* temporary: fill screen black */
 	/* render the sprites */
 	for(list = game->sprites; list; list = list->next) {
-		if( DrawSprite( list->sprite, screen )) {
+		if( DrawSprite( list->sprite, screen, delta )) {
 			return -1;
 		}
 	}

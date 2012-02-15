@@ -19,7 +19,7 @@ Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animatio
 }
 
 Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                    const unsigned int currentIndex, cpVect size, cpVect posn ) {
+                    const size_t currentIndex, cpVect size, cpVect posn ) {
 	assert(sprite);
 	sprite->surface = surface;
 	sprite->numAnimations = numAnimations;
@@ -34,6 +34,8 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	cpBodySetPos( sprite->body, posn );
 	sprite->size = size;
 	sprite->posn = posn;
+	sprite->frame_index = 0;
+	sprite->time = 0;
 	sprite->shape = cpBoxShapeNew( sprite->body, size.x, size.y );
 	return sprite;
 }
@@ -41,21 +43,21 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 void FreeSprite( Sprite *sprite ) {
 	assert(sprite);
 	assert(sprite->animations);
-	/* XXX: might want to free body here */
+	/* TODO: free cpBody */
+	/* TODO: free each animation */
 	free(sprite->animations);
 	free(sprite);
 }
 
-int DrawSprite( Sprite *sprite, SDL_Surface *surface ) {
-	assert(sprite);
-	assert(surface);
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, unsigned int delta ) {
+	assert(sprite && surface);
 	SDL_Rect *frame;
 	SDL_Rect posn = {0,0,0,0};
 	cpVect offset;
 
 	/* get animation frame */
-	UpdateAnimation( sprite->currentAnimation, SDL_GetTicks() );
-	frame = GetFrame( sprite->currentAnimation );
+	sprite->time += delta;
+	frame = GetUpdatedFrame( sprite->currentAnimation, &sprite->frame_index, &sprite->time );
 
 	/* get the sprite position */
 	/* TODO: calculated offset to center of grav */

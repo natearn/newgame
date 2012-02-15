@@ -65,16 +65,12 @@ void MoveAction( struct GameState* game, unsigned int id, unsigned int state ) {
 	moves[id-1] = state;
 
 	cpBodySetVel( game->focus->body, cpv( 0, 0 ));
-	StopAnimation( game->focus->currentAnimation );
 	for(unsigned int i=0; i < 4; i++) {
 		if( moves[i] ) {
-			StopAnimation( game->focus->currentAnimation );
+			if( game->focus->currentAnimation != &(game->focus->animations[i])) game->focus->frame_index = 0;
 			game->focus->currentAnimation = &(game->focus->animations[i]);
-			NextFrame( game->focus->currentAnimation );
-			StartAnimation( game->focus->currentAnimation, 150 );
+			GetNextFrame( game->focus->currentAnimation, &game->focus->frame_index );
 			cpBodySetVel( game->focus->body, cpvadd( game->focus->body->v, cpv( (i==1?50:(i==0?-50:0)), (i==3?50:(i==2?-50:0)))));
 		}
 	}
-	/* if not moving, reset the animation to idle */
-	if( !game->focus->currentAnimation->interval ) game->focus->currentAnimation->index = game->focus->currentAnimation->reset;
 }

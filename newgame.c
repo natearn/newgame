@@ -78,9 +78,9 @@ Uint32 PushRender( Uint32 interval, void *param ) {
 }
 
 /* Renders the game state, then flips the screen. */
-int Render( struct GameState *game, SDL_Surface *screen ) {
+int Render( struct GameState *game, SDL_Surface *screen, unsigned int delta ) {
 	assert( game && screen );
-	if( RenderGameState( game, screen )) {
+	if( RenderGameState( game, screen, delta )) {
 		return -1;
 	}
 	if( SDL_Flip(screen) ) {
@@ -121,7 +121,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 						frameTime = ((frameTime*frames)+(thisTime-lastTime))/(frames+1);
 						/* simulating the remainder right away instead of saving it */
 						UpdateGameStateFull( game, thisTime - lastTime, SIM_DELTA );
-						if( Render( game, screen ) ) {
+						if( Render( game, screen, thisTime - lastTime ) ) {
 							exit(EXIT_FAILURE);
 						}
 						/* add new timer with calculated wait time */
@@ -132,7 +132,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 							return -1;
 						}
 						/* occasionally print some statistics */
-						if(frames%10==5) fprintf(stderr," mpr:%d mpf:%d fps:%d\r",renderTime,frameTime,1000/frameTime);
+						if(frames%10==5) fprintf(stderr,"\r mpr:%d mpf:%d fps:%d ",renderTime,frameTime,1000/frameTime);
 						frames++;
 						lastTime = thisTime;
 						renderTime = ((renderTime*(frames-1))+(SDL_GetTicks()-thisTime))/frames;
@@ -152,7 +152,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 			/* other events */
 			case SDL_QUIT:
 				/* autosave state here if desired */
-				fprintf(stderr,"\nSDL_QUIT\n");
+				fprintf(stderr,"SDL_QUIT\n");
 				return 0;
 			case SDL_VIDEORESIZE:
 				/* not being handled yet */
@@ -235,10 +235,10 @@ int main( int argc, char *argv[] ) {
 	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
 	};
 	Animation anims[4];
-	InitAnimation( &anims[0], 4, 0, 0, &frames[4*0] );
-	InitAnimation( &anims[1], 4, 0, 0, &frames[4*1] );
-	InitAnimation( &anims[2], 4, 0, 0, &frames[4*2] );
-	InitAnimation( &anims[3], 4, 0, 0, &frames[4*3] );
+	InitAnimation( &anims[0], 4, &frames[4*0], 0, 200 );
+	InitAnimation( &anims[1], 4, &frames[4*1], 0, 200 );
+	InitAnimation( &anims[2], 4, &frames[4*2], 0, 200 );
+	InitAnimation( &anims[3], 4, &frames[4*3], 0, 200 );
 
 	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ) );
 	game.focus = &player;
