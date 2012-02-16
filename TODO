@@ -1,7 +1,7 @@
-	* build GameState and Sprite structures around chipmunk data structures (make it an implementation detail)
+	- reimplement diagonal movement
 	- create a data structure to hold SDL_Surface + animations (should be separate from game data, but may depend on game data)
-	- create a sprite sheet that has animations for all basic actions (rolling, attacking, blocking, charging)
-	- add game statistics to the sprite struct
+	- create a sprite sheet that has animations for all basic actions (walking, rolling, attacking, blocking, charging)
+	- add character stats to the sprite struct
 
 	# this is important but not urgent
 	- completely separate game data from SDL rendering structures, make game data independent of input/output mechanisms
