@@ -43,15 +43,14 @@ typedef struct {
 #endif
 	Animation *curAnim;   /* current animation */
 	size_t index;         /* frame index */
-	unsigned int time;    /* remaining time to animate (this should always be less than the current animation interval) */
+	Uint32 time;    /* remaining time to animate (this should always be less than the current animation interval) */
 } Sprite;
 
 /* linked list of sprites */
-struct _SpriteList {
+typedef struct SpriteList {
 	Sprite *sprite;
-	struct _SpriteList *next;
-};
-typedef struct _SpriteList SpriteList;
+	struct SpriteList *next;
+} SpriteList;
 
 /* allocate and initialize a sprite */
 Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, size_t currentIndex, cpVect size, cpVect posn );
@@ -63,6 +62,6 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, 
 void FreeSprite( Sprite *sprite );
 
 /* draw the sprite on the surface */
-int DrawSprite( Sprite *sprite, SDL_Surface *surface, unsigned int delta );
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
 #endif /* _SPRITE_H_ */

@@ -11,9 +11,9 @@ struct GameState *InitGameState( struct GameState* game ) {
 	return game;
 }
 
-unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta ) {
+Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta ) {
 	assert( game && game->space );
-	unsigned int rem = time;
+	Uint32 rem = time;
 	while( rem > delta ) {
 		cpSpaceStep( game->space, delta/1000.0 );
 		rem -= delta;
@@ -21,7 +21,7 @@ unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigne
 	return rem;
 }
 
-void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta ) {
+void UpdateGameStateFull( struct GameState *game, Uint32 time, Uint32 delta ) {
 	cpSpaceStep( game->space, UpdateGameState(game,time,delta)/1000.0 );
 }
 
@@ -45,7 +45,7 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 	return 0;
 }
 
-int RenderGameState( struct GameState *game, SDL_Surface *screen, unsigned int delta ) {
+int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
 	/* render the map */

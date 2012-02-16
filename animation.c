@@ -5,7 +5,7 @@
 #include "animation.h"
 
 /* allocate and initialize an animation */
-Animation *CreateAnimation( size_t length, SDL_Rect* frames, unsigned int reset, unsigned int interval ) {
+Animation *CreateAnimation( size_t length, SDL_Rect* frames, size_t reset, Uint32 interval ) {
 	Animation *ret;
 	if( !(ret = malloc(sizeof(*ret))) ) {
 		fprintf(stderr,"Animation: CreateAnimation: malloc failed\n");
@@ -15,7 +15,7 @@ Animation *CreateAnimation( size_t length, SDL_Rect* frames, unsigned int reset,
 }
 
 /* initialize a preallocted animation */
-Animation *InitAnimation( Animation *anim, size_t length, SDL_Rect* frames, unsigned int reset, unsigned int interval ) {
+Animation *InitAnimation( Animation *anim, size_t length, SDL_Rect* frames, size_t reset, Uint32 interval ) {
 	assert(anim && frames);
 	anim->length = length;
 	anim->reset = reset;
@@ -47,7 +47,7 @@ SDL_Rect *GetNextFrame( Animation *anim, size_t *index ) {
 	return &anim->frames[idx];
 }
 
-SDL_Rect *GetUpdatedFrame( Animation *anim, size_t *index, unsigned int *time ) {
+SDL_Rect *GetUpdatedFrame( Animation *anim, size_t *index, Uint32 *time ) {
 	assert(anim);
 	if( anim->interval > 0 ) {
 		for(; *time > anim->interval; *time -= anim->interval) {

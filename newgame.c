@@ -78,7 +78,7 @@ Uint32 PushRender( Uint32 interval, void *param ) {
 }
 
 /* Renders the game state, then flips the screen. */
-int Render( struct GameState *game, SDL_Surface *screen, unsigned int delta ) {
+int Render( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
 	assert( game && screen );
 	if( RenderGameState( game, screen, delta )) {
 		return -1;
@@ -91,7 +91,7 @@ int Render( struct GameState *game, SDL_Surface *screen, unsigned int delta ) {
 }
 
 /* calculate the amount of time to wait before queueing another RENDER_EVENT */
-unsigned int CalcWaitTime( unsigned int target, unsigned int delay, unsigned int min ) {
+Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 	assert( target >= min );
 	if( delay > target - min ) {
 		return min;
@@ -236,10 +236,10 @@ int main( int argc, char *argv[] ) {
 	};
 	Animation anims[4+4];
 
-	InitAnimation( &anims[0], 4, &frames[4*0], 0, 200 );
-	InitAnimation( &anims[1], 4, &frames[4*1], 0, 200 );
-	InitAnimation( &anims[2], 4, &frames[4*2], 0, 200 );
-	InitAnimation( &anims[3], 4, &frames[4*3], 0, 200 );
+	InitAnimation( &anims[0], 4, &frames[4*0], 0, 150 );
+	InitAnimation( &anims[1], 4, &frames[4*1], 0, 150 );
+	InitAnimation( &anims[2], 4, &frames[4*2], 0, 150 );
+	InitAnimation( &anims[3], 4, &frames[4*3], 0, 150 );
 
 	InitAnimation( &anims[0+4], 1, &frames[4*0], 0, 0 );
 	InitAnimation( &anims[1+4], 1, &frames[4*1], 0, 0 );

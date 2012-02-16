@@ -9,7 +9,7 @@
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
 Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                      const unsigned int currentIndex, cpVect size, cpVect posn ) {
+                      const size_t currentIndex, cpVect size, cpVect posn ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
@@ -49,7 +49,7 @@ void FreeSprite( Sprite *sprite ) {
 	free(sprite);
 }
 
-int DrawSprite( Sprite *sprite, SDL_Surface *surface, unsigned int delta ) {
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 	assert(sprite && surface);
 	SDL_Rect *frame;
 	SDL_Rect posn = {0,0,0,0};

@@ -3,11 +3,7 @@
 
 #include "sprite.h"
 #include <chipmunk/chipmunk.h>
-
-struct SpriteList {
-	Sprite *sprite;
-	struct SpriteList *next;
-};
+#include <SDL/SDL.h> /* Uint32 */
 
 /* all encompassing struct */
 struct GameState {
@@ -23,9 +19,9 @@ struct GameState {
 };
 
 struct GameState *InitGameState( struct GameState* game );
-unsigned int UpdateGameState( struct GameState *game, unsigned int time, unsigned int delta );
-void UpdateGameStateFull( struct GameState *game, unsigned int time, unsigned int delta );
-int RenderGameState( struct GameState *game, SDL_Surface *screen, unsigned int delta );
+Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta );
+void UpdateGameStateFull( struct GameState *game, Uint32 time, Uint32 delta );
+int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta );
 int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn );
 #if 0
 /* serialization of game data to human-readable text files */
