@@ -7,7 +7,6 @@
 #include "animation.h"
 #include "sprite.h"
 #include "gamestate.h"
-#include "action.h"
 
 /* XXX: sleep granularity is 10ms, but calculations are down with 1ms */
 #define MAX_WAIT_TIME 33 /* maximum ms delay between redraws */
@@ -97,6 +96,27 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 		return min;
 	}
 	return target - delay;
+}
+
+void HandleInput( struct GameState *game, SDL_Event *event ) {
+	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
+	//unsigned int state = ( event->type == SDL_KEYDOWN );
+	switch( event->key.keysym.sym ) {
+		case SDLK_LEFT:
+			MoveSprite( game->focus, FACE_LEFT );
+			break;
+		case SDLK_RIGHT:
+			MoveSprite( game->focus, FACE_RIGHT );
+			break;
+		case SDLK_UP:
+			MoveSprite( game->focus, FACE_UP );
+			break;
+		case SDLK_DOWN:
+			MoveSprite( game->focus, FACE_DOWN );
+			break;
+		default:
+			break;
+	}
 }
 
 /* EventHandler

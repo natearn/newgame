@@ -64,4 +64,7 @@ void FreeSprite( Sprite *sprite );
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
+/* sprite actions: */
+void MoveSprite( Sprite *sprite, unsigned int direction );
+
 #endif /* _SPRITE_H_ */
