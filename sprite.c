@@ -74,27 +74,35 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 
 /* actions */
 
-void MoveSprite( Sprite *sprite, unsigned int direction ) {
+void MoveSprite( Sprite *sprite, unsigned int state, unsigned int direction ) {
 	const float base = 50.0; /* TODO move this out */
 	assert( sprite );
-	sprite->attributes[ATTR_FACE] = direction;
-	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
-	/* XXX: this will not work once there are external forces */
-	switch( sprite->attributes[ATTR_FACE] ) {
-		case FACE_LEFT:
-			cpBodySetVel( sprite->body, cpv( -1*base, 0*base ));
-			break;
-		case FACE_RIGHT:
-			cpBodySetVel( sprite->body, cpv( 1*base, 0*base ));
-			break;
-		case FACE_UP:
-			cpBodySetVel( sprite->body, cpv( 0*base, -1*base ));
-			break;
-		case FACE_DOWN:
-			cpBodySetVel( sprite->body, cpv( 0*base, 1*base ));
-			break;
-		default:
-			cpBodySetVel( sprite->body, cpv( 0*base, 0*base ));
-			break;
+	if( state == 0 ) {
+		if( direction == sprite->attributes[ATTR_FACE] ) {
+			sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
+			cpBodySetVel( sprite->body, cpvzero );
+		}
+	} else {
+		/* set state */
+		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
+		sprite->attributes[ATTR_FACE] = direction;
+		/* apply physics */
+		switch( sprite->attributes[ATTR_FACE] ) {
+			case FACE_LEFT:
+				cpBodySetVel( sprite->body, cpv( -1*base, 0*base ));
+				break;
+			case FACE_RIGHT:
+				cpBodySetVel( sprite->body, cpv( 1*base, 0*base ));
+				break;
+			case FACE_UP:
+				cpBodySetVel( sprite->body, cpv( 0*base, -1*base ));
+				break;
+			case FACE_DOWN:
+				cpBodySetVel( sprite->body, cpv( 0*base, 1*base ));
+				break;
+			default:
+				cpBodySetVel( sprite->body, cpvzero);
+				break;
+		}
 	}
 }

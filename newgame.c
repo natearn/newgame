@@ -100,19 +100,19 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 
 void HandleInput( struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
-	//unsigned int state = ( event->type == SDL_KEYDOWN );
+	unsigned int state = (event->type == SDL_KEYDOWN);
 	switch( event->key.keysym.sym ) {
 		case SDLK_LEFT:
-			MoveSprite( game->focus, FACE_LEFT );
+			MoveSprite( game->focus, state, FACE_LEFT );
 			break;
 		case SDLK_RIGHT:
-			MoveSprite( game->focus, FACE_RIGHT );
+			MoveSprite( game->focus, state, FACE_RIGHT );
 			break;
 		case SDLK_UP:
-			MoveSprite( game->focus, FACE_UP );
+			MoveSprite( game->focus, state, FACE_UP );
 			break;
 		case SDLK_DOWN:
-			MoveSprite( game->focus, FACE_DOWN );
+			MoveSprite( game->focus, state, FACE_DOWN );
 			break;
 		default:
 			break;

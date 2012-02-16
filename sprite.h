@@ -39,7 +39,7 @@ typedef struct {
 	/* eventually, this should be moved out of Sprite entirely  */
 	/* animation/frame data */
 	Resource *resource;
-	Animation *table[][][][];
+	Animation *table[NUM_FACE][NUM_MOVE];
 #endif
 	Animation *curAnim;   /* current animation */
 	size_t index;         /* frame index */
@@ -65,6 +65,6 @@ void FreeSprite( Sprite *sprite );
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
 /* sprite actions: */
-void MoveSprite( Sprite *sprite, unsigned int direction );
+void MoveSprite( Sprite *sprite, unsigned int state, unsigned int direction );
 
 #endif /* _SPRITE_H_ */
