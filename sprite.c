@@ -37,6 +37,9 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	sprite->index = 0;
 	sprite->time = 0;
 	sprite->shape = cpBoxShapeNew( sprite->body, size.x, size.y );
+	for( size_t i=0; i < NUM_ATTR; i++ ) {
+		sprite->attributes[i] = 0;
+	}
 	return sprite;
 }
 
@@ -55,7 +58,14 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 	SDL_Rect posn = {0,0,0,0};
 	cpVect offset;
 
-	/* get animation frame */
+	/* determine current animation */
+	if( sprite->curAnim != sprite->table[sprite->attributes[ATTR_FACE]][sprite->attributes[ATTR_MOVE]] ) {
+		sprite->index = 0;
+		sprite->time = 0;
+	}
+	sprite->curAnim = sprite->table[sprite->attributes[ATTR_FACE]][sprite->attributes[ATTR_MOVE]];
+
+	/* get current animation frame */
 	sprite->time += delta;
 	frame = GetUpdatedFrame( sprite->curAnim, &sprite->index, &sprite->time );
 

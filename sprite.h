@@ -35,12 +35,7 @@ typedef struct {
 	/* for now, gonna put all enum attributes into this array */
 	unsigned int attributes[NUM_ATTR];
 
-#if 0
-	/* eventually, this should be moved out of Sprite entirely  */
-	/* animation/frame data */
-	Resource *resource;
 	Animation *table[NUM_FACE][NUM_MOVE];
-#endif
 	Animation *curAnim;   /* current animation */
 	size_t index;         /* frame index */
 	Uint32 time;    /* remaining time to animate (this should always be less than the current animation interval) */

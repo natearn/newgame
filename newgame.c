@@ -234,25 +234,25 @@ int main( int argc, char *argv[] ) {
 
 	SDL_Rect frames[] = {
 	                      /* left */
-	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*3,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*3,.w=16,.h=18},
 	                      /* right */
-	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*1,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*1,.w=16,.h=18},
 	                      /* up */
-	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*0,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*0,.w=16,.h=18},
 	                      /* down */
-	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*1,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	                      {.x=16*3,.y=180+18*2,.w=16,.h=18},
+	                      {.x=16*2,.y=180+18*2,.w=16,.h=18},
 	};
 	Animation anims[4+4];
 
@@ -261,15 +261,24 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[2], 4, &frames[4*2], 0, 150 );
 	InitAnimation( &anims[3], 4, &frames[4*3], 0, 150 );
 
-	InitAnimation( &anims[0+4], 1, &frames[4*0], 0, 0 );
-	InitAnimation( &anims[1+4], 1, &frames[4*1], 0, 0 );
-	InitAnimation( &anims[2+4], 1, &frames[4*2], 0, 0 );
-	InitAnimation( &anims[3+4], 1, &frames[4*3], 0, 0 );
+	InitAnimation( &anims[0+4], 1, &frames[4*0+1], 0, 0 );
+	InitAnimation( &anims[1+4], 1, &frames[4*1+1], 0, 0 );
+	InitAnimation( &anims[2+4], 1, &frames[4*2+1], 0, 0 );
+	InitAnimation( &anims[3+4], 1, &frames[4*3+1], 0, 0 );
 
-	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ) );
-	game.focus = &player;
+	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ));
+	/* assign animations to attirbute combinations */
+	player.table[FACE_LEFT][MOVE_WALK] = &anims[0];
+	player.table[FACE_LEFT][MOVE_IDLE] = &anims[0+4];
+	player.table[FACE_RIGHT][MOVE_WALK] = &anims[1];
+	player.table[FACE_RIGHT][MOVE_IDLE] = &anims[1+4];
+	player.table[FACE_UP][MOVE_WALK] = &anims[2];
+	player.table[FACE_UP][MOVE_IDLE] = &anims[2+4];
+	player.table[FACE_DOWN][MOVE_WALK] = &anims[3];
+	player.table[FACE_DOWN][MOVE_IDLE] = &anims[3+4];
 
 	AddSprite( &game, &player, cpv( 50, 50 ));
+	game.focus = &player;
 #endif
 
 	/* push the first render event onto the queue */
