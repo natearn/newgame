@@ -34,6 +34,8 @@ typedef struct {
 	/* game data */
 	/* for now, gonna put all enum attributes into this array */
 	unsigned int attributes[NUM_ATTR];
+	unsigned int move_state[NUM_FACE];
+	unsigned int move_val;
 
 	Animation *table[NUM_FACE][NUM_MOVE];
 	Animation *curAnim;   /* current animation */

@@ -40,6 +40,10 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	for( size_t i=0; i < NUM_ATTR; i++ ) {
 		sprite->attributes[i] = 0;
 	}
+	sprite->move_val = 1;
+	for( unsigned j=0; j < NUM_FACE; j++ ) {
+		sprite->move_state[j] = 0;
+	}
 	return sprite;
 }
 
@@ -84,35 +88,44 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 
 /* actions */
 
+/* XXX: not happy with this implementation, going to consider more attribute states */
 void MoveSprite( Sprite *sprite, unsigned int state, unsigned int direction ) {
 	const float base = 50.0; /* TODO move this out */
 	assert( sprite );
-	if( state == 0 ) {
-		if( direction == sprite->attributes[ATTR_FACE] ) {
-			sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
-			cpBodySetVel( sprite->body, cpvzero );
-		}
+
+	/* update movement table */
+	sprite->move_state[direction] = state * sprite->move_val;
+	sprite->move_val += 1;
+
+	/* recalculate velocity */
+	cpBodySetVel( sprite->body, cpvzero );
+	if( sprite->move_state[FACE_LEFT] > 0 ) {
+		cpBodySetVel( sprite->body, cpvadd( cpBodyGetVel(sprite->body), cpv( -1*base, 0*base )));
+	}
+	if( sprite->move_state[FACE_RIGHT] > 0 ) {
+		cpBodySetVel( sprite->body, cpvadd( cpBodyGetVel(sprite->body), cpv( 1*base, 0*base )));
+	}
+	if( sprite->move_state[FACE_UP] > 0 ) {
+		cpBodySetVel( sprite->body, cpvadd( cpBodyGetVel(sprite->body), cpv( 0*base, -1*base )));
+	}
+	if( sprite->move_state[FACE_DOWN] > 0 ) {
+		cpBodySetVel( sprite->body, cpvadd( cpBodyGetVel(sprite->body), cpv( 0*base, 1*base )));
+	}
+
+	/* recalculate ATTR_MOVE */
+	if( cpBodyGetVel(sprite->body).x == 0 && cpBodyGetVel(sprite->body).y == 0 ) {
+		sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
 	} else {
-		/* set state */
 		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
-		sprite->attributes[ATTR_FACE] = direction;
-		/* apply physics */
-		switch( sprite->attributes[ATTR_FACE] ) {
-			case FACE_LEFT:
-				cpBodySetVel( sprite->body, cpv( -1*base, 0*base ));
-				break;
-			case FACE_RIGHT:
-				cpBodySetVel( sprite->body, cpv( 1*base, 0*base ));
-				break;
-			case FACE_UP:
-				cpBodySetVel( sprite->body, cpv( 0*base, -1*base ));
-				break;
-			case FACE_DOWN:
-				cpBodySetVel( sprite->body, cpv( 0*base, 1*base ));
-				break;
-			default:
-				cpBodySetVel( sprite->body, cpvzero);
-				break;
+
+		/* recalculate ATTR_FACE */
+		unsigned int cur_max = 0;
+		for( unsigned int i=0; i < NUM_FACE; i++ ) {
+			if( sprite->move_state[i] > cur_max ) {
+				cur_max = sprite->move_state[i];
+				sprite->attributes[ATTR_FACE] = i;
+			}
 		}
+		sprite->move_val = cur_max + 1;
 	}
 }
