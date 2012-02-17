@@ -98,21 +98,25 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 	return target - delay;
 }
 
+/* TODO: need to remember what keys are currently pressed and in what order they were pressed */
 void HandleInput( struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
-	unsigned int state = (event->type == SDL_KEYDOWN);
 	switch( event->key.keysym.sym ) {
 		case SDLK_LEFT:
-			MoveSprite( game->focus, state, FACE_LEFT );
+			FaceSprite( game->focus, FACE_LEFT );
+			MoveSprite( game->focus, MOVE_WALK );
 			break;
 		case SDLK_RIGHT:
-			MoveSprite( game->focus, state, FACE_RIGHT );
+			FaceSprite( game->focus, FACE_RIGHT );
+			MoveSprite( game->focus, MOVE_WALK );
 			break;
 		case SDLK_UP:
-			MoveSprite( game->focus, state, FACE_UP );
+			FaceSprite( game->focus, FACE_UP );
+			MoveSprite( game->focus, MOVE_WALK );
 			break;
 		case SDLK_DOWN:
-			MoveSprite( game->focus, state, FACE_DOWN );
+			FaceSprite( game->focus, FACE_DOWN );
+			MoveSprite( game->focus, MOVE_WALK );
 			break;
 		default:
 			break;
@@ -130,6 +134,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 	SDL_TimerID render_id;
 	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, renderTime = 0, frameTime = 0;
 	unsigned int frames = 0;
+
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
 
@@ -194,7 +199,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 				break;
 		}
 	}
-	fprintf(stderr,"RunEventManager error: stopping without quit event\n");
+	fprintf(stderr,"EventHandler error: stopping without quit event\n");
 	return -1;
 }
 
@@ -266,7 +271,7 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[2+4], 1, &frames[4*2+1], 0, 0 );
 	InitAnimation( &anims[3+4], 1, &frames[4*3+1], 0, 0 );
 
-	Sprite player; InitSprite( &player, LoadSpriteSheet( "charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ));
+	Sprite player; InitSprite( &player, LoadSpriteSheet( "../art/rpgsprites/charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ));
 	/* assign animations to attirbute combinations */
 	player.table[FACE_LEFT][MOVE_WALK] = &anims[0];
 	player.table[FACE_LEFT][MOVE_IDLE] = &anims[0+4];

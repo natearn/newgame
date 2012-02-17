@@ -15,9 +15,9 @@
 #define MOVE_WALK 1
 #define NUM_MOVE  2
 
-#define ATTR_FACE 0
-#define ATTR_MOVE 1
-#define NUM_ATTR  2
+#define ATTR_FACE  0
+#define ATTR_MOVE  1
+#define NUM_ATTR   2
 
 /* Sprite */
 typedef struct {
@@ -34,8 +34,6 @@ typedef struct {
 	/* game data */
 	/* for now, gonna put all enum attributes into this array */
 	unsigned int attributes[NUM_ATTR];
-	unsigned int move_state[NUM_FACE];
-	unsigned int move_val;
 
 	Animation *table[NUM_FACE][NUM_MOVE];
 	Animation *curAnim;   /* current animation */
@@ -62,6 +60,7 @@ void FreeSprite( Sprite *sprite );
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
 /* sprite actions: */
-void MoveSprite( Sprite *sprite, unsigned int state, unsigned int direction );
+void FaceSprite( Sprite *sprite, unsigned int direction ); /* direction: FACE_LEFT, FACE_RIGHT, FACE_UP, FACE_DOWN */
+void MoveSprite( Sprite *sprite, unsigned int type ); /* type: MOVE_IDLE, MOVE_WALK */
 
 #endif /* _SPRITE_H_ */
