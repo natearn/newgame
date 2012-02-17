@@ -39,9 +39,9 @@ static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite )
 
 int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 	if(!InsertSprite( game, sprite )) return -1;
-	cpBodySetPos( sprite->body, posn );
-	cpSpaceAddBody( game->space, sprite->body );
-	cpSpaceAddShape( game->space, sprite->shape );
+	cpBodySetPos( GetSpriteBody(sprite), posn );
+	cpSpaceAddBody( game->space, GetSpriteBody(sprite) );
+	cpSpaceAddShape( game->space, GetSpriteShape(sprite) );
 	return 0;
 }
 

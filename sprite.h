@@ -15,30 +15,42 @@
 #define MOVE_WALK 1
 #define NUM_MOVE  2
 
+/* mutually exclusive action states */
+/* TODO: add this to attributes */
+#define ACTION_NONE   0
+#define ACTION_STRIKE 1
+#define ACTION_BLOCK  2
+#define ACTION_CHARGE 3
+#define ACTION_DODGE  4
+#define NUM_ACTION    5
+
 #define ATTR_FACE  0
 #define ATTR_MOVE  1
 #define NUM_ATTR   2
 
 /* Sprite */
 typedef struct {
+	/* data that still needs to be moved out */
 	SDL_Surface *surface;
-	Animation *animations;       /* array of animations */
-	size_t numAnimations;        /* size of animations array */
+	Animation *animations; /* array of animations */
+	size_t numAnimations;  /* size of animations array */
 
 	/* physics data */
-	cpBody *body;                /* physical body of the sprite */
-	cpShape *shape;              /* box shape */
-	cpVect size;                 /* size of box */
-	cpVect posn;                 /* position center of box */
+	cpBody *body;   /* physical body of the sprite */
+	cpShape *shape; /* box shape */
+	cpVect size;    /* size of box */
+	cpVect posn;    /* position center of box */
 
 	/* game data */
-	/* for now, gonna put all enum attributes into this array */
-	unsigned int attributes[NUM_ATTR];
-
-	Animation *table[NUM_FACE][NUM_MOVE];
-	Animation *curAnim;   /* current animation */
-	size_t index;         /* frame index */
-	Uint32 time;    /* remaining time to animate (this should always be less than the current animation interval) */
+	unsigned int attributes[NUM_ATTR]; /* collection of state enums used by the animation table */
+	Uint32 action_duration;            /* time left until the current action ends */
+	Uint32 action_timeout;             /* time left until another action can begin */
+	
+	/* animation data */
+	Animation *table[NUM_FACE][NUM_MOVE]; /* look-up table */
+	Animation *curAnim;                   /* current animation */
+	size_t index;                         /* current frame index */
+	Uint32 time;                          /* remaining time to animate (this should always be less than the current animation interval) */
 } Sprite;
 
 /* linked list of sprites */
@@ -56,6 +68,10 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );
 
+/* get methods (hiding the implementation) */
+cpBody *GetSpriteBody( Sprite *sprite );
+cpShape *GetSpriteShape( Sprite *sprite );
+
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
@@ -63,5 +79,6 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 void SpriteStartWalking( Sprite *sprite, unsigned int direction );
 void SpriteStartStrafing( Sprite *sprite, unsigned int direction );
 void SpriteStopMoving( Sprite *sprite );
+void SpriteDodge( Sprite *sprite, unsigned int direction );
 
 #endif /* _SPRITE_H_ */

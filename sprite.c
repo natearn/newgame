@@ -8,8 +8,7 @@
 
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
-Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                      const size_t currentIndex, cpVect size, cpVect posn ) {
+Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animation *animations, const size_t currentIndex, cpVect size, cpVect posn ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
@@ -18,8 +17,8 @@ Sprite *CreateSprite( SDL_Surface *surface, const size_t numAnimations, Animatio
 	return InitSprite( ret, surface, numAnimations, animations, currentIndex, size, posn );
 }
 
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations,
-                    const size_t currentIndex, cpVect size, cpVect posn ) {
+/* TODO: remove hard-coded constants, replace with either named constants from header or function parameters */
+Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimations, Animation *animations, const size_t currentIndex, cpVect size, cpVect posn ) {
 	assert(sprite);
 	sprite->surface = surface;
 	sprite->numAnimations = numAnimations;
@@ -29,7 +28,6 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	}
 	memcpy( sprite->animations, animations, numAnimations*sizeof(*animations) );
 	sprite->curAnim = &sprite->animations[currentIndex];
-	/* TODO: no hard-coded constants, get these from user or header file definitions */
 	sprite->body = cpBodyNew( 10.0, INFINITY );
 	cpBodySetPos( sprite->body, posn );
 	sprite->size = size;
@@ -40,6 +38,8 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 	for( size_t i=0; i < NUM_ATTR; i++ ) {
 		sprite->attributes[i] = 0;
 	}
+	sprite->action_duration = 0;
+	sprite->action_timeout = 0;
 	return sprite;
 }
 
@@ -52,6 +52,17 @@ void FreeSprite( Sprite *sprite ) {
 	free(sprite);
 }
 
+/* get methods */
+cpBody *GetSpriteBody( Sprite *sprite ) {
+	assert(sprite);
+	return sprite->body;
+}
+cpShape *GetSpriteShape( Sprite *sprite ) {
+	assert(sprite);
+	return sprite->shape;
+}
+
+/* this needs to be separated */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 	assert(sprite && surface);
 	SDL_Rect *frame;
@@ -85,7 +96,8 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 /* actions */
 
 void SpriteStartWalking( Sprite *sprite, unsigned int direction ) {
-	assert(sprite);
+	assert( sprite );
+	assert( direction < NUM_FACE );
 	sprite->attributes[ATTR_FACE] = direction;
 	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
 	switch( sprite->attributes[ATTR_FACE] ) {
@@ -107,7 +119,8 @@ void SpriteStartWalking( Sprite *sprite, unsigned int direction ) {
 	}
 }
 void SpriteStartStrafing( Sprite *sprite, unsigned int direction ) {
-	assert(sprite);
+	assert( sprite );
+	assert( direction < NUM_FACE );
 	//sprite->attributes[ATTR_MOVE] = MOVE_STRAFE;
 	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
 	switch( direction ) {
@@ -129,41 +142,32 @@ void SpriteStartStrafing( Sprite *sprite, unsigned int direction ) {
 	}
 }
 
-void SpriteStopMoving( Sprite* sprite ) {
-	assert(sprite);
+void SpriteStopMoving( Sprite *sprite ) {
+	assert( sprite );
 	sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
 	cpBodySetVel( sprite->body, cpvzero );
 }
 
-void FaceSprite( Sprite *sprite, unsigned int direction ) {
-	assert(sprite);
-	assert(direction < NUM_FACE);
-	sprite->attributes[ATTR_FACE] = direction;
-}
-void MoveSprite( Sprite *sprite, unsigned int type ) {
-	assert(sprite);
-	assert(type < NUM_MOVE);
-	sprite->attributes[ATTR_MOVE] = type;
-	/* TODO: replace hard-coded constant with a variable */
-	if( type == MOVE_WALK ) {
-		switch( sprite->attributes[ATTR_FACE] ) {
-			case FACE_LEFT:
-				cpBodySetVel( sprite->body, cpv( -50.0, 0.0 ) );
-				break;
-			case FACE_RIGHT:
-				cpBodySetVel( sprite->body, cpv( 50.0, 0.0 ) );
-				break;
-			case FACE_UP:
-				cpBodySetVel( sprite->body, cpv( 0.0, -50.0 ) );
-				break;
-			case FACE_DOWN:
-				cpBodySetVel( sprite->body, cpv( 0.0, 50.0 ) );
-				break;
-			default:
-				fprintf(stderr,"Sprite: MoveSprite: invalid ATTR_FACE direction\n");
-				cpBodySetVel( sprite->body, cpvzero );
-		}
-	} else {
-		cpBodySetVel( sprite->body, cpvzero );
+void SpriteDodge( Sprite *sprite, unsigned int direction ) {
+	assert( sprite );
+	assert( direction < NUM_FACE );
+	/* TODO: set an attribute to indicate dodging */
+	//switch( direction ) {
+	switch( sprite->attributes[ATTR_FACE] ) {
+		case FACE_LEFT:
+			cpBodySetVel( sprite->body, cpv( -300.0, 0.0 ) );
+			break;
+		case FACE_RIGHT:
+			cpBodySetVel( sprite->body, cpv( 300.0, 0.0 ) );
+			break;
+		case FACE_UP:
+			cpBodySetVel( sprite->body, cpv( 0.0, -300.0 ) );
+			break;
+		case FACE_DOWN:
+			cpBodySetVel( sprite->body, cpv( 0.0, 300.0 ) );
+			break;
+		default:
+			fprintf(stderr,"Sprite: SpriteDodge: invalid direction argument\n");
+			cpBodySetVel( sprite->body, cpvzero );
 	}
 }

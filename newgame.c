@@ -114,6 +114,9 @@ void HandleInput( struct GameState *game, SDL_Event *event ) {
 		case SDLK_DOWN:
 			SpriteStartWalking( game->focus, FACE_DOWN );
 			break;
+		case SDLK_d:
+			SpriteDodge( game->focus, FACE_DOWN );
+			break;
 		default:
 			break;
 	}
