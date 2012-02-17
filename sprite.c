@@ -84,6 +84,57 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 
 /* actions */
 
+void SpriteStartWalking( Sprite *sprite, unsigned int direction ) {
+	assert(sprite);
+	sprite->attributes[ATTR_FACE] = direction;
+	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
+	switch( sprite->attributes[ATTR_FACE] ) {
+		case FACE_LEFT:
+			cpBodySetVel( sprite->body, cpv( -50.0, 0.0 ) );
+			break;
+		case FACE_RIGHT:
+			cpBodySetVel( sprite->body, cpv( 50.0, 0.0 ) );
+			break;
+		case FACE_UP:
+			cpBodySetVel( sprite->body, cpv( 0.0, -50.0 ) );
+			break;
+		case FACE_DOWN:
+			cpBodySetVel( sprite->body, cpv( 0.0, 50.0 ) );
+			break;
+		default:
+			fprintf(stderr,"Sprite: SpriteStartWalking: invalid ATTR_FACE direction\n");
+			cpBodySetVel( sprite->body, cpvzero );
+	}
+}
+void SpriteStartStrafing( Sprite *sprite, unsigned int direction ) {
+	assert(sprite);
+	//sprite->attributes[ATTR_MOVE] = MOVE_STRAFE;
+	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
+	switch( direction ) {
+		case FACE_LEFT:
+			cpBodySetVel( sprite->body, cpv( -50.0, 0.0 ) );
+			break;
+		case FACE_RIGHT:
+			cpBodySetVel( sprite->body, cpv( 50.0, 0.0 ) );
+			break;
+		case FACE_UP:
+			cpBodySetVel( sprite->body, cpv( 0.0, -50.0 ) );
+			break;
+		case FACE_DOWN:
+			cpBodySetVel( sprite->body, cpv( 0.0, 50.0 ) );
+			break;
+		default:
+			fprintf(stderr,"Sprite: SpriteStartStrafing: invalid direction argument\n");
+			cpBodySetVel( sprite->body, cpvzero );
+	}
+}
+
+void SpriteStopMoving( Sprite* sprite ) {
+	assert(sprite);
+	sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
+	cpBodySetVel( sprite->body, cpvzero );
+}
+
 void FaceSprite( Sprite *sprite, unsigned int direction ) {
 	assert(sprite);
 	assert(direction < NUM_FACE);

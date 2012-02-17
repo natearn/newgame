@@ -60,7 +60,8 @@ void FreeSprite( Sprite *sprite );
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
 /* sprite actions: */
-void FaceSprite( Sprite *sprite, unsigned int direction ); /* direction: FACE_LEFT, FACE_RIGHT, FACE_UP, FACE_DOWN */
-void MoveSprite( Sprite *sprite, unsigned int type ); /* type: MOVE_IDLE, MOVE_WALK */
+void SpriteStartWalking( Sprite *sprite, unsigned int direction );
+void SpriteStartStrafing( Sprite *sprite, unsigned int direction );
+void SpriteStopMoving( Sprite *sprite );
 
 #endif /* _SPRITE_H_ */
