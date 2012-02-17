@@ -147,7 +147,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 						/* add new timer with calculated wait time */
 						/* XXX: this prevents flooding the queue with render events
 						        and gives me control over wait time */
-						if( !(render_id = SDL_AddTimer( (CalcWaitTime( MAX_WAIT_TIME, (SDL_GetTicks() - thisTime), MIN_WAIT_TIME )/10)*10, PushRender, NULL ))) {
+						if( !(render_id = SDL_AddTimer( CalcWaitTime( MAX_WAIT_TIME, (SDL_GetTicks() - thisTime), MIN_WAIT_TIME ), PushRender, NULL ))) {
 							fprintf(stderr,"failure to add timer\n");
 							return -1;
 						}
