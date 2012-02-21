@@ -45,10 +45,7 @@ Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, const size_t numAnimat
 
 void FreeSprite( Sprite *sprite ) {
 	assert(sprite);
-	assert(sprite->animations);
-	/* TODO: free cpBody */
-	/* TODO: free each animation */
-	free(sprite->animations);
+	/* TODO: free chipmunk structs */
 	free(sprite);
 }
 
