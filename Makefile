@@ -4,7 +4,7 @@ CC=gcc
 
 all: newgame tags
 
-newgame: animation.o sprite.o gamestate.o newgame.o
+newgame: animation.o resource.o sprite.o gamestate.o newgame.o
 	$(CC) -o $@ $^ `sdl-config --libs` -lSDL_image -lchipmunk
 
 tags: *.[hc]
