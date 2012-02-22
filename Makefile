@@ -1,5 +1,5 @@
-CFLAGS=`sdl-config --cflags` -Wall -Wextra -std=c99
-# -ansi -pedantic
+CFLAGS=`sdl-config --cflags` -Wall -Wextra -std=c99 -pedantic
+# -ansi
 CC=gcc
 
 all: newgame tags
