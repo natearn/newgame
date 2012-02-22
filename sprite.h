@@ -7,7 +7,7 @@
 #include "resource.h"
 
 typedef enum {
-	NONE,
+	NONE = 0,
 	UP,
 	DOWN,
 	LEFT,
@@ -16,7 +16,7 @@ typedef enum {
 	UP_LEFT,
 	DOWN_RIGHT,
 	DOWN_LEFT,
-	NUM_Direction = 8
+	NUM_DIRECTION = 8
 } Direction;
 
 #define FACE_LEFT  0

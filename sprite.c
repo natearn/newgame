@@ -117,18 +117,24 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 
 void SpriteStartWalking( Sprite *sprite, Direction direction ) {
 	assert( sprite );
-	//sprite->attributes[ATTR_FACE] = direction;
-	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
-	cpBodySetVel( sprite->control, cpvzero );
-	if( direction == UP || direction == UP_LEFT || direction == UP_RIGHT ) {
-		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, -50.0 )));
-	} else if( direction == DOWN || direction == DOWN_LEFT || direction == DOWN_RIGHT ) {
-		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, 50.0 )));
-	}
+	SpriteStopMoving( sprite );
 	if( direction == LEFT || direction == UP_LEFT || direction == DOWN_LEFT ) {
+		sprite->attributes[ATTR_FACE] = FACE_LEFT;
+		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
 		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( -50.0, 0.0 )));
 	} else if( direction == RIGHT || direction == UP_RIGHT || direction == DOWN_RIGHT ) {
+		sprite->attributes[ATTR_FACE] = FACE_RIGHT;
+		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
 		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 50.0, 0.0 )));
+	}
+	if( direction == UP || direction == UP_LEFT || direction == UP_RIGHT ) {
+		sprite->attributes[ATTR_FACE] = FACE_UP;
+		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, -50.0 )));
+	} else if( direction == DOWN || direction == DOWN_LEFT || direction == DOWN_RIGHT ) {
+		sprite->attributes[ATTR_FACE] = FACE_DOWN;
+		sprite->attributes[ATTR_MOVE] = MOVE_WALK;
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, 50.0 )));
 	}
 }
 
