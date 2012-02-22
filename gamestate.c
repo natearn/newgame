@@ -42,6 +42,7 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 	cpBodySetPos( GetSpriteBody(sprite), posn );
 	cpSpaceAddBody( game->space, GetSpriteBody(sprite) );
 	cpSpaceAddShape( game->space, GetSpriteShape(sprite) );
+	cpSpaceAddConstraint( game->space, sprite->pivot );
 	return 0;
 }
 

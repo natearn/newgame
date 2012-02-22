@@ -115,7 +115,7 @@ void HandleInput( struct GameState *game, SDL_Event *event ) {
 			SpriteStartWalking( game->focus, FACE_DOWN );
 			break;
 		case SDLK_d:
-			SpriteDodge( game->focus, FACE_DOWN );
+			SpriteDodge( game->focus );
 			break;
 		default:
 			break;
@@ -270,7 +270,11 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &anims[2+4], 1, &frames[4*2+1], 0, 0 );
 	InitAnimation( &anims[3+4], 1, &frames[4*3+1], 0, 0 );
 
-	Sprite player; InitSprite( &player, LoadSpriteSheet( "../art/rpgsprites/charsets1.png", 0x7bd5fe ), 4, anims, 1, cpv( 16, 12 ), cpv( 50.0, 50.0 ));
+	struct Resource spritesheet;
+	InitResource( &spritesheet, LoadSpriteSheet( "../art/rpgsprites/charsets1.png", 0x7bd5fe ), 4, anims );
+	Sprite player, npc;
+	InitSprite( &player, &spritesheet );
+	InitSprite( &npc, &spritesheet );
 	/* assign animations to attirbute combinations */
 	player.table[FACE_LEFT][MOVE_WALK] = &anims[0];
 	player.table[FACE_LEFT][MOVE_IDLE] = &anims[0+4];
@@ -281,7 +285,17 @@ int main( int argc, char *argv[] ) {
 	player.table[FACE_DOWN][MOVE_WALK] = &anims[3];
 	player.table[FACE_DOWN][MOVE_IDLE] = &anims[3+4];
 
+	npc.table[FACE_LEFT][MOVE_WALK] = &anims[0];
+	npc.table[FACE_LEFT][MOVE_IDLE] = &anims[0+4];
+	npc.table[FACE_RIGHT][MOVE_WALK] = &anims[1];
+	npc.table[FACE_RIGHT][MOVE_IDLE] = &anims[1+4];
+	npc.table[FACE_UP][MOVE_WALK] = &anims[2];
+	npc.table[FACE_UP][MOVE_IDLE] = &anims[2+4];
+	npc.table[FACE_DOWN][MOVE_WALK] = &anims[3];
+	npc.table[FACE_DOWN][MOVE_IDLE] = &anims[3+4];
+
 	AddSprite( &game, &player, cpv( 50, 50 ));
+	AddSprite( &game, &npc, cpv( 150, 50 ));
 	game.focus = &player;
 #endif
 

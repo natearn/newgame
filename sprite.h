@@ -4,6 +4,7 @@
 #include <SDL/SDL.h>
 #include <chipmunk/chipmunk.h>
 #include "animation.h"
+#include "resource.h"
 
 #define FACE_LEFT  0
 #define FACE_RIGHT 1
@@ -30,25 +31,19 @@
 
 /* Sprite */
 typedef struct {
-	/* data that still needs to be moved out */
-	SDL_Surface *surface;
-	Animation *animations; /* array of animations */
-	size_t numAnimations;  /* size of animations array */
-
 	/* physics data */
-	cpBody *body;   /* physical body of the sprite */
-	cpShape *shape; /* box shape */
-	cpVect size;    /* size of box */
-	cpVect posn;    /* position center of box */
+	cpBody *control;     /* controls the body by dragging it */
+	cpBody *body;        /* physical body of the sprite */
+	cpShape *shape;      /* box shape */
+	cpConstraint *pivot; /* connection between control and body */
 
 	/* game data */
 	unsigned int attributes[NUM_ATTR]; /* collection of state enums used by the animation table */
-	Uint32 action_duration;            /* time left until the current action ends */
-	Uint32 action_timeout;             /* time left until another action can begin */
 	
 	/* animation data */
 	Animation *table[NUM_FACE][NUM_MOVE]; /* look-up table */
-	Animation *curAnim;                   /* current animation */
+	struct Resource *resource;            /* animation resource structure */
+	Animation *animation;                 /* current animation */
 	size_t index;                         /* current frame index */
 	Uint32 time;                          /* remaining time to animate (this should always be less than the current animation interval) */
 } Sprite;
@@ -59,26 +54,31 @@ typedef struct SpriteList {
 	struct SpriteList *next;
 } SpriteList;
 
-/* allocate and initialize a sprite */
-Sprite *CreateSprite( SDL_Surface *surface, size_t numAnimations, Animation *animations, size_t currentIndex, cpVect size, cpVect posn );
+/* initialize a sprite (body and shape are added to chipmunk space) */
+/* TODO: more physical attibutes should be parameters */
+Sprite *InitSprite( Sprite *sprite, struct Resource *resource );
 
-/* initialize a sprite */
-Sprite *InitSprite( Sprite *sprite, SDL_Surface *surface, size_t numAnimations, Animation *animations, size_t currentIndex, cpVect size, cpVect posn );
+/* allocate and initialize a sprite */
+Sprite *CreateSprite( struct Resource *resource );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );
 
-/* get methods (hiding the implementation) */
-cpBody *GetSpriteBody( Sprite *sprite );
-cpShape *GetSpriteShape( Sprite *sprite );
+/* updated sprite state from time delta (physics will have already been updated when this is called) */
+/* XXX: not being used for anything currently */
+Uint32 UpdateSprite( Sprite *sprite, Uint32 time );
 
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
 
+/* get methods (hiding the implementation) */
+cpBody *GetSpriteBody( Sprite *sprite );
+cpShape *GetSpriteShape( Sprite *sprite );
+cpConstraint *GetSpritePivot( Sprite *sprite );
+
 /* sprite actions: */
 void SpriteStartWalking( Sprite *sprite, unsigned int direction );
-void SpriteStartStrafing( Sprite *sprite, unsigned int direction );
 void SpriteStopMoving( Sprite *sprite );
-void SpriteDodge( Sprite *sprite, unsigned int direction );
+void SpriteDodge( Sprite *sprite );
 
 #endif /* _SPRITE_H_ */
