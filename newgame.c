@@ -103,16 +103,16 @@ void HandleInput( struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
 	switch( event->key.keysym.sym ) {
 		case SDLK_LEFT:
-			SpriteStartWalking( game->focus, FACE_LEFT );
+			SpriteStartWalking( game->focus, LEFT );
 			break;
 		case SDLK_RIGHT:
-			SpriteStartWalking( game->focus, FACE_RIGHT );
+			SpriteStartWalking( game->focus, RIGHT );
 			break;
 		case SDLK_UP:
-			SpriteStartWalking( game->focus, FACE_UP );
+			SpriteStartWalking( game->focus, UP );
 			break;
 		case SDLK_DOWN:
-			SpriteStartWalking( game->focus, FACE_DOWN );
+			SpriteStartWalking( game->focus, DOWN );
 			break;
 		case SDLK_d:
 			SpriteDodge( game->focus );

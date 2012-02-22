@@ -115,27 +115,20 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 
 /* actions */
 
-void SpriteStartWalking( Sprite *sprite, unsigned int direction ) {
+void SpriteStartWalking( Sprite *sprite, Direction direction ) {
 	assert( sprite );
-	assert( direction < NUM_FACE );
-	sprite->attributes[ATTR_FACE] = direction;
+	//sprite->attributes[ATTR_FACE] = direction;
 	sprite->attributes[ATTR_MOVE] = MOVE_WALK;
-	switch( sprite->attributes[ATTR_FACE] ) {
-		case FACE_LEFT:
-			cpBodySetVel( sprite->control, cpv( -50.0, 0.0 ) );
-			break;
-		case FACE_RIGHT:
-			cpBodySetVel( sprite->control, cpv( 50.0, 0.0 ) );
-			break;
-		case FACE_UP:
-			cpBodySetVel( sprite->control, cpv( 0.0, -50.0 ) );
-			break;
-		case FACE_DOWN:
-			cpBodySetVel( sprite->control, cpv( 0.0, 50.0 ) );
-			break;
-		default:
-			fprintf(stderr,"Sprite: SpriteStartWalking: invalid ATTR_FACE direction\n");
-			cpBodySetVel( sprite->body, cpvzero );
+	cpBodySetVel( sprite->control, cpvzero );
+	if( direction == UP || direction == UP_LEFT || direction == UP_RIGHT ) {
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, -50.0 )));
+	} else if( direction == DOWN || direction == DOWN_LEFT || direction == DOWN_RIGHT ) {
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 0.0, 50.0 )));
+	}
+	if( direction == LEFT || direction == UP_LEFT || direction == DOWN_LEFT ) {
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( -50.0, 0.0 )));
+	} else if( direction == RIGHT || direction == UP_RIGHT || direction == DOWN_RIGHT ) {
+		cpBodySetVel( sprite->control, cpvadd( sprite->control->v, cpv( 50.0, 0.0 )));
 	}
 }
 

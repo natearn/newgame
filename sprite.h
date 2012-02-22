@@ -6,6 +6,19 @@
 #include "animation.h"
 #include "resource.h"
 
+typedef enum {
+	NONE,
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT,
+	UP_RIGHT,
+	UP_LEFT,
+	DOWN_RIGHT,
+	DOWN_LEFT,
+	NUM_Direction = 8
+} Direction;
+
 #define FACE_LEFT  0
 #define FACE_RIGHT 1
 #define FACE_UP    2
@@ -77,7 +90,7 @@ cpShape *GetSpriteShape( Sprite *sprite );
 cpConstraint *GetSpritePivot( Sprite *sprite );
 
 /* sprite actions: */
-void SpriteStartWalking( Sprite *sprite, unsigned int direction );
+void SpriteStartWalking( Sprite *sprite, Direction direction );
 void SpriteStopMoving( Sprite *sprite );
 void SpriteDodge( Sprite *sprite );
 
