@@ -1,13 +1,15 @@
 in order of importance:
 
 	- improve sprite action routines and animation table/attributes
+		- decide how affects with durations will be handled
 	- decide if sprite updating and sprite rendering need to be separated
 	- create a keyboard input state machine
+	- create a field (sensor shape) which applies a force or velocity to the sprite body;
 	- create a sprite sheet that has animations for all basic actions (walking, rolling, attacking, blocking, charging)
-	- add character stats to the sprite struct
 	- create a map data structure
 	- create config files for various data structures
 	- create routines to read and write the config files into their corresponding data structures
+	- add character stats to the sprite struct
 
 # this would be nice, but is not necessary:
 	- completely separate game data from SDL rendering structures, make game data independent of input/output mechanisms (with clean interfaces)
