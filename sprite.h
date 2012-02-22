@@ -29,15 +29,6 @@ typedef enum {
 #define MOVE_WALK 1
 #define NUM_MOVE  2
 
-/* mutually exclusive action states */
-/* TODO: add this to attributes */
-#define ACTION_NONE   0
-#define ACTION_STRIKE 1
-#define ACTION_BLOCK  2
-#define ACTION_CHARGE 3
-#define ACTION_DODGE  4
-#define NUM_ACTION    5
-
 #define ATTR_FACE  0
 #define ATTR_MOVE  1
 #define NUM_ATTR   2
@@ -92,6 +83,5 @@ cpConstraint *GetSpritePivot( Sprite *sprite );
 /* sprite actions: */
 void SpriteStartWalking( Sprite *sprite, Direction direction );
 void SpriteStopMoving( Sprite *sprite );
-void SpriteDodge( Sprite *sprite );
 
 #endif /* _SPRITE_H_ */

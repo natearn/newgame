@@ -143,26 +143,3 @@ void SpriteStopMoving( Sprite *sprite ) {
 	sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
 	cpBodySetVel( sprite->control, cpvzero );
 }
-
-void SpriteDodge( Sprite *sprite ) {
-	assert( sprite );
-	/* TODO: set an attribute to indicate dodging */
-	//cpBodySetVel( sprite->control, cpvmult( cpBodyGetVel(sprite->control), 4.0 ));
-	switch( sprite->attributes[ATTR_FACE] ) {
-		case FACE_LEFT:
-			cpBodySetVel( sprite->control, cpvadd( cpBodyGetVel(sprite->control), cpv(-200.0, 0.0 )));
-			break;
-		case FACE_RIGHT:
-			cpBodySetVel( sprite->control, cpvadd( cpBodyGetVel(sprite->control), cpv( 200.0, 0.0 )));
-			break;
-		case FACE_UP:
-			cpBodySetVel( sprite->control, cpvadd( cpBodyGetVel(sprite->control), cpv( 0.0, -200.0 )));
-			break;
-		case FACE_DOWN:
-			cpBodySetVel( sprite->control, cpvadd( cpBodyGetVel(sprite->control), cpv( 0.0, 200.0 )));
-			break;
-		default:
-			fprintf(stderr,"Sprite: SpriteDodge: invalid direction argument\n");
-			cpBodySetVel( sprite->body, cpvzero );
-	}
-}
