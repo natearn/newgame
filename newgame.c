@@ -98,23 +98,73 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 	return target - delay;
 }
 
-/* TODO: need to remember what keys are currently pressed and in what order they were pressed */
-void HandleInput( struct GameState *game, SDL_Event *event ) {
+/* FIXME: this is really gross, but it works */
+void HandleInput( unsigned int keys[], struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
+	int x, y;
 	switch( event->key.keysym.sym ) {
 		case SDLK_LEFT:
-			SpriteStartWalking( game->focus, LEFT );
+			keys[2] = (event->type == SDL_KEYDOWN);
+			y = keys[1] - keys[0];
+			x = keys[3] - keys[2];
 			break;
 		case SDLK_RIGHT:
-			SpriteStartWalking( game->focus, RIGHT );
+			keys[3] = (event->type == SDL_KEYDOWN);
+			y = keys[1] - keys[0];
+			x = keys[3] - keys[2];
 			break;
 		case SDLK_UP:
-			SpriteStartWalking( game->focus, UP );
+			keys[0] = (event->type == SDL_KEYDOWN);
+			y = keys[1] - keys[0];
+			x = keys[3] - keys[2];
 			break;
 		case SDLK_DOWN:
-			SpriteStartWalking( game->focus, DOWN );
+			keys[1] = (event->type == SDL_KEYDOWN);
+			y = keys[1] - keys[0];
+			x = keys[3] - keys[2];
 			break;
 		default:
+			break;
+	}
+	switch(x) {
+		case -1:
+			switch(y) {
+				case -1:
+					SpriteStartWalking( game->focus, UP_LEFT );
+					break;
+				case 0:
+					SpriteStartWalking( game->focus, LEFT );
+					break;
+				case 1:
+					SpriteStartWalking( game->focus, DOWN_LEFT );
+					break;
+			}
+			break;
+		case 0:
+			switch(y) {
+				case -1:
+					SpriteStartWalking( game->focus, UP );
+					break;
+				case 0:
+					SpriteStopMoving( game->focus );
+					break;
+				case 1:
+					SpriteStartWalking( game->focus, DOWN );
+					break;
+			}
+			break;
+		case 1:
+			switch(y) {
+				case -1:
+					SpriteStartWalking( game->focus, UP_RIGHT );
+					break;
+				case 0:
+					SpriteStartWalking( game->focus, RIGHT );
+					break;
+				case 1:
+					SpriteStartWalking( game->focus, DOWN_RIGHT );
+					break;
+			}
 			break;
 	}
 }
@@ -130,6 +180,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 	SDL_TimerID render_id;
 	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, renderTime = 0, frameTime = 0;
 	unsigned int frames = 0;
+	unsigned int keys[] = {0,0,0,0};
 
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -167,7 +218,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 			/* currently keyboard only */
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				HandleInput( game, &event );
+				HandleInput( keys, game, &event );
 				break;
 
 			/* other events */
