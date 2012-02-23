@@ -342,8 +342,8 @@ int main( int argc, char *argv[] ) {
 	struct Resource spritesheet;
 	InitResource( &spritesheet, LoadSpriteSheet( "../art/rpgsprites/charsets1.png", 0x7bd5fe ), 4, anims );
 	Sprite player, npc;
-	InitSprite( &player, &spritesheet );
-	InitSprite( &npc, &spritesheet );
+	InitSprite( &player, &spritesheet, 10, 10 );
+	InitSprite( &npc, &spritesheet, 10, 10 );
 	/* assign animations to attirbute combinations */
 	player.table[FACE_LEFT][MOVE_WALK] = &anims[0];
 	player.table[FACE_LEFT][MOVE_IDLE] = &anims[0+4];

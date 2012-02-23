@@ -6,6 +6,10 @@
 #include "animation.h"
 #include "resource.h"
 
+#define SPRITE_ELASTICITY 0.0f
+#define SPRITE_FRICTION 0.7f
+#define SPRITE_MAX_CONTROL_FORCE 100000.0f
+
 #define NONE          0
 #define UP            1
 #define DOWN          2
@@ -62,10 +66,10 @@ typedef struct SpriteList {
 
 /* initialize a sprite (body and shape are added to chipmunk space) */
 /* TODO: more physical attibutes should be parameters */
-Sprite *InitSprite( Sprite *sprite, struct Resource *resource );
+Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, cpFloat mass );
 
 /* allocate and initialize a sprite */
-Sprite *CreateSprite( struct Resource *resource );
+Sprite *CreateSprite( struct Resource *resource, cpFloat radius, cpFloat mass );
 
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );

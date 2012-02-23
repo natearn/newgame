@@ -10,7 +10,7 @@
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
 /* TODO: make radius, mass, elasticity, and friction parameters, bias and force should be constants */
-Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
+Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, cpFloat mass ) {
 	assert(sprite && resource );
 	sprite->resource = resource;
 	sprite->animation = NULL;
@@ -26,17 +26,17 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 	/* TODO: replace hard-coded constants with parameters */
 	sprite->space = NULL;
 	sprite->control = cpBodyNew( INFINITY, INFINITY );
-	sprite->body = cpBodyNew( 10, INFINITY );
-	sprite->shape = cpCircleShapeNew( sprite->body, 10, cpvzero );
+	sprite->body = cpBodyNew( mass, INFINITY );
+	sprite->shape = cpCircleShapeNew( sprite->body, radius, cpvzero );
 	//cpShapeSetElasticity(sprite->shape, 0.0f);
-	sprite->shape->e = 0.0f;
+	sprite->shape->e = SPRITE_ELASTICITY;
 	//cpShapeSetFriction(sprite->shape, 0.7f);
-	sprite->shape->u = 0.7f;
+	sprite->shape->u = SPRITE_FRICTION;
 	sprite->pivot = cpPivotJointNew2(sprite->control, sprite->body, cpvzero, cpvzero);
 	//cpConstraintSetMaxBias(sprite->pivot, 0); // disable joint correction
 	sprite->pivot->maxBias = 0;
 	//cpConstraintSetMaxForce(sprite->pivot, 10000.0f); // emulate linear friction
-	sprite->pivot->maxForce = 1000000.0;
+	sprite->pivot->maxForce = SPRITE_MAX_CONTROL_FORCE;
 
 	for( size_t i=0; i < NUM_ATTR; i++ ) {
 		sprite->attributes[i] = 0;
@@ -46,13 +46,13 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 	return sprite;
 }
 
-Sprite *CreateSprite( struct Resource *resource ) {
+Sprite *CreateSprite( struct Resource *resource, cpFloat radius, cpFloat mass ) {
 	Sprite *ret = NULL;
 	if(!(ret = malloc(sizeof(*ret)))) {
 		fprintf(stderr,"Sprite: CreateSprite: malloc failed\n");
 		return NULL;
 	}
-	return InitSprite( ret, resource );
+	return InitSprite( ret, resource, radius, mass );
 }
 
 void FreeSprite( Sprite *sprite ) {

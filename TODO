@@ -3,11 +3,11 @@ in order of importance:
 	- decide how effects with durations will be handled
 	- create a field (sensor shape) which applies a force or velocity to the sprite body;
 	- create a sprite sheet that has animations for all basic actions (walking, rolling, attacking, blocking, charging)
+	- add character stats to the sprite struct
 	- create a map data structure
 	- create config files for various data structures
 	- create routines to read and write the config files into their corresponding data structures
-	- decide if sprite updating and sprite rendering need to be separated
-	- add character stats to the sprite struct
+	- add support for screen resize & choose an effective view port size rather than using the screen size
 
 # this would be nice, but is not necessary:
 	- completely separate game data from SDL rendering structures, make game data independent of input/output mechanisms (with clean interfaces)
