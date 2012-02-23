@@ -1,4 +1,4 @@
-in order of importance:
+in no particular order:
 
 	- decide how effects with durations will be handled
 	- create a field (sensor shape) which applies a force or velocity to the sprite body;
@@ -8,6 +8,4 @@ in order of importance:
 	- create config files for various data structures
 	- create routines to read and write the config files into their corresponding data structures
 	- add support for screen resize & choose an effective view port size rather than using the screen size
-
-# this would be nice, but is not necessary:
-	- completely separate game data from SDL rendering structures, make game data independent of input/output mechanisms (with clean interfaces)
+	- make game data independent of input/output mechanisms
