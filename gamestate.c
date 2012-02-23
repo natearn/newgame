@@ -8,6 +8,8 @@ struct GameState *InitGameState( struct GameState* game ) {
 	assert( game );
 	game->space = cpSpaceNew();
 	game->sprites = NULL;
+	game->view_width = VIEW_WIDTH;
+	game->view_height = VIEW_HEIGHT;
 	return game;
 }
 
@@ -50,8 +52,9 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
+	cpVect offset = cpv( (game->view_width / 2) * -1.0, (game->view_height / 2) * -1.0 );
 	/* TODO: replace hard-coded offset */
-	cpVect screen_posn = cpvadd( cpBodyGetPos(game->focus->body), cpv(-320.0, -240.0) );
+	cpVect screen_posn = cpvadd( cpBodyGetPos(game->focus->body), offset );
 	/* render the map */
 	SDL_FillRect( screen, NULL, 0x0 ); /* temporary: fill screen black */
 	/* render the sprites */

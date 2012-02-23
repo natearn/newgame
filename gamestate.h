@@ -5,11 +5,16 @@
 #include <chipmunk/chipmunk.h>
 #include <SDL/SDL.h> /* Uint32 */
 
+#define VIEW_WIDTH 640
+#define VIEW_HEIGHT 480
+
 /* all encompassing struct */
 struct GameState {
 	cpSpace *space; /* cpSpace for physics simulation */
 	Sprite *focus;
 	struct SpriteList *sprites;
+	unsigned int view_width;
+	unsigned int view_height;
 #if 0
 	Controls *controls; /* key mappings */
 	DisplaySettings *display; /* keep this separate? */
