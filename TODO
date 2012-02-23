@@ -1,13 +1,12 @@
 in order of importance:
 
-	- decide how affects with durations will be handled
-	- decide if sprite updating and sprite rendering need to be separated
-	- create a keyboard input state machine
+	- decide how effects with durations will be handled
 	- create a field (sensor shape) which applies a force or velocity to the sprite body;
 	- create a sprite sheet that has animations for all basic actions (walking, rolling, attacking, blocking, charging)
 	- create a map data structure
 	- create config files for various data structures
 	- create routines to read and write the config files into their corresponding data structures
+	- decide if sprite updating and sprite rendering need to be separated
 	- add character stats to the sprite struct
 
 # this would be nice, but is not necessary:
