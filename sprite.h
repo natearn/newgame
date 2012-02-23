@@ -6,18 +6,17 @@
 #include "animation.h"
 #include "resource.h"
 
-typedef enum {
-	NONE = 0,
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT,
-	UP_RIGHT,
-	UP_LEFT,
-	DOWN_RIGHT,
-	DOWN_LEFT,
-	NUM_DIRECTION = 8
-} Direction;
+#define NONE          0
+#define UP            1
+#define DOWN          2
+#define LEFT          3
+#define RIGHT         4
+#define UP_RIGHT      5
+#define UP_LEFT       6
+#define DOWN_RIGHT    7
+#define DOWN_LEFT     8
+#define NUM_DIRECTION 9
+typedef unsigned int Direction;
 
 #define FACE_LEFT  0
 #define FACE_RIGHT 1
@@ -43,6 +42,8 @@ typedef struct {
 
 	/* game data */
 	unsigned int attributes[NUM_ATTR]; /* collection of state enums used by the animation table */
+	Direction facing;
+	Direction moving;
 	
 	/* animation data */
 	Animation *table[NUM_FACE][NUM_MOVE]; /* look-up table */
@@ -73,7 +74,7 @@ void FreeSprite( Sprite *sprite );
 Uint32 UpdateSprite( Sprite *sprite, Uint32 time );
 
 /* draw the sprite on the surface */
-int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta );
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, cpVect screen_posn, Uint32 delta );
 
 /* get methods (hiding the implementation) */
 cpBody *GetSpriteBody( Sprite *sprite );

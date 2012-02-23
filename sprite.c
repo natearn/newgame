@@ -26,7 +26,7 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 	/* TODO: replace hard-coded constants with parameters */
 	sprite->control = cpBodyNew( INFINITY, INFINITY );
 	sprite->body = cpBodyNew( 10, INFINITY );
-	sprite->shape = cpCircleShapeNew( sprite->body, 12, cpvzero );
+	sprite->shape = cpCircleShapeNew( sprite->body, 10, cpvzero );
 	//cpShapeSetElasticity(sprite->shape, 0.0f);
 	sprite->shape->e = 0.0f;
 	//cpShapeSetFriction(sprite->shape, 0.7f);
@@ -36,9 +36,12 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 	sprite->pivot->maxBias = 0;
 	//cpConstraintSetMaxForce(sprite->pivot, 10000.0f); // emulate linear friction
 	sprite->pivot->maxForce = 1000000.0;
+
 	for( size_t i=0; i < NUM_ATTR; i++ ) {
 		sprite->attributes[i] = 0;
 	}
+	sprite->facing = NONE;
+	sprite->moving = NONE; 
 	return sprite;
 }
 
@@ -83,11 +86,10 @@ Uint32 UpdateSprite( Sprite *sprite, Uint32 time ) {
 }
 
 /* this needs to be separated */
-int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
+int DrawSprite( Sprite *sprite, SDL_Surface *surface, cpVect screen_posn, Uint32 delta ) {
 	assert(sprite && surface);
 	SDL_Rect *frame;
 	SDL_Rect posn = {0,0,0,0};
-	cpVect offset;
 
 	/* determine current animation */
 	if( sprite->animation != sprite->table[sprite->attributes[ATTR_FACE]][sprite->attributes[ATTR_MOVE]] ) {
@@ -100,10 +102,10 @@ int DrawSprite( Sprite *sprite, SDL_Surface *surface, Uint32 delta ) {
 	sprite->time += delta;
 	frame = GetUpdatedFrame( sprite->animation, &sprite->index, &sprite->time );
 
-	/* get the sprite position */
-	/* TODO: calculated offset to center of grav */
-	offset = cpvzero;
-	if( sprite->body ) posn = Vect2Rect( cpvadd( offset, cpBodyGetPos( sprite->body )));
+	/* get the sprite screen position */
+	posn = Vect2Rect( cpvsub( cpBodyGetPos(sprite->body), screen_posn ));
+	posn.y -= frame->h;
+	posn.x -= frame->w/2;
 
 	/* blit */
 	if( SDL_BlitSurface( sprite->resource->surface, frame, surface, &posn )) {

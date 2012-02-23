@@ -102,30 +102,51 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 void HandleInput( unsigned int keys[], struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
 	int x, y;
-	switch( event->key.keysym.sym ) {
-		case SDLK_LEFT:
-			keys[2] = (event->type == SDL_KEYDOWN);
-			y = keys[1] - keys[0];
-			x = keys[3] - keys[2];
-			break;
-		case SDLK_RIGHT:
-			keys[3] = (event->type == SDL_KEYDOWN);
-			y = keys[1] - keys[0];
-			x = keys[3] - keys[2];
-			break;
-		case SDLK_UP:
-			keys[0] = (event->type == SDL_KEYDOWN);
-			y = keys[1] - keys[0];
-			x = keys[3] - keys[2];
-			break;
-		case SDLK_DOWN:
-			keys[1] = (event->type == SDL_KEYDOWN);
-			y = keys[1] - keys[0];
-			x = keys[3] - keys[2];
-			break;
-		default:
-			break;
+	if( event->type == SDL_KEYDOWN ) {
+		switch( event->key.keysym.sym ) {
+			case SDLK_a:
+				return;
+			case SDLK_s:
+				return;
+			case SDLK_d:
+				return;
+			case SDLK_f:
+				return;
+			case SDLK_LEFT:
+				keys[2] = 1;
+				break;
+			case SDLK_RIGHT:
+				keys[3] = 1;
+				break;
+			case SDLK_UP:
+				keys[0] = 1;
+				break;
+			case SDLK_DOWN:
+				keys[1] = 1;
+				break;
+			default:
+				return;
+		}
+	} else {
+		switch( event->key.keysym.sym ) {
+			case SDLK_LEFT:
+				keys[2] = 0;
+				break;
+			case SDLK_RIGHT:
+				keys[3] = 0;
+				break;
+			case SDLK_UP:
+				keys[0] = 0;
+				break;
+			case SDLK_DOWN:
+				keys[1] = 0;
+				break;
+			default:
+				return;
+		}
 	}
+	y = keys[1] - keys[0];
+	x = keys[3] - keys[2];
 	switch(x) {
 		case -1:
 			switch(y) {

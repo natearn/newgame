@@ -1,7 +1,6 @@
 in order of importance:
 
-	- improve sprite action routines and animation table/attributes
-		- decide how affects with durations will be handled
+	- decide how affects with durations will be handled
 	- decide if sprite updating and sprite rendering need to be separated
 	- create a keyboard input state machine
 	- create a field (sensor shape) which applies a force or velocity to the sprite body;

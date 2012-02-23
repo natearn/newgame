@@ -49,11 +49,13 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
+	/* TODO: replace hard-coded offset */
+	cpVect screen_posn = cpvadd( cpBodyGetPos(game->focus->body), cpv(-320.0, -240.0) );
 	/* render the map */
 	SDL_FillRect( screen, NULL, 0x0 ); /* temporary: fill screen black */
 	/* render the sprites */
 	for(list = game->sprites; list; list = list->next) {
-		if( DrawSprite( list->sprite, screen, delta )) {
+		if( DrawSprite( list->sprite, screen, screen_posn, delta )) {
 			return -1;
 		}
 	}
