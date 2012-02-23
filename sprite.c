@@ -25,8 +25,8 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 
 	/* TODO: replace hard-coded constants with parameters */
 	sprite->control = cpBodyNew( INFINITY, INFINITY );
-	sprite->body = cpBodyNew( 10, cpMomentForCircle( 10, 0, 16, cpvzero ));
-	sprite->shape = cpCircleShapeNew( sprite->body, 16, cpvzero );
+	sprite->body = cpBodyNew( 10, INFINITY );
+	sprite->shape = cpCircleShapeNew( sprite->body, 12, cpvzero );
 	//cpShapeSetElasticity(sprite->shape, 0.0f);
 	sprite->shape->e = 0.0f;
 	//cpShapeSetFriction(sprite->shape, 0.7f);
