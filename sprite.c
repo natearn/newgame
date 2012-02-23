@@ -79,13 +79,6 @@ cpConstraint *GetSpritePivot( Sprite *sprite ) {
 	return sprite->pivot;
 }
 
-Uint32 UpdateSprite( Sprite *sprite, Uint32 time ) {
-	assert(sprite);
-	Uint32 remaining = time;
-	/* update stuff */
-	return remaining;
-}
-
 /* this needs to be separated */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, cpVect screen_posn, Uint32 delta ) {
 	assert(sprite && surface);

@@ -70,10 +70,6 @@ Sprite *CreateSprite( struct Resource *resource );
 /* deallocate a sprite */
 void FreeSprite( Sprite *sprite );
 
-/* updated sprite state from time delta (physics will have already been updated when this is called) */
-/* XXX: not being used for anything currently */
-Uint32 UpdateSprite( Sprite *sprite, Uint32 time );
-
 /* draw the sprite on the surface */
 int DrawSprite( Sprite *sprite, SDL_Surface *surface, cpVect screen_posn, Uint32 delta );
 
