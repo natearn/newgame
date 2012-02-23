@@ -35,6 +35,7 @@ typedef unsigned int Direction;
 /* Sprite */
 typedef struct {
 	/* physics data */
+	cpSpace *space;      /* need access to space in order to add sensor shapes */
 	cpBody *control;     /* controls the body by dragging it */
 	cpBody *body;        /* physical body of the sprite */
 	cpShape *shape;      /* box shape */

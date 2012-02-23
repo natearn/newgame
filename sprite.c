@@ -24,6 +24,7 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource ) {
 	}
 
 	/* TODO: replace hard-coded constants with parameters */
+	sprite->space = NULL;
 	sprite->control = cpBodyNew( INFINITY, INFINITY );
 	sprite->body = cpBodyNew( 10, INFINITY );
 	sprite->shape = cpCircleShapeNew( sprite->body, 10, cpvzero );
