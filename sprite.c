@@ -19,7 +19,11 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, c
 
 	for( size_t face=0; face < NUM_FACE; face++ ) {
 		for( size_t move=0; move < NUM_MOVE; move++ ) {
-			sprite->table[face][move] = NULL;
+			if( resource->animations ) {
+				sprite->table[face][move] = &resource->animations[0];
+			} else {
+				sprite->table[face][move] = NULL;
+			}
 		}
 	}
 

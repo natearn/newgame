@@ -366,6 +366,16 @@ int main( int argc, char *argv[] ) {
 	AddSprite( &game, &player, cpv( 50, 50 ));
 	AddSprite( &game, &npc, cpv( 150, 50 ));
 	game.focus = &player;
+
+	/* make a tree */
+	SDL_Rect treeframe = { .x=124, .y=0, .w=74, .h=112 };
+	Animation treeanim;
+	InitAnimation( &treeanim, 1, &treeframe, 0, 0 );
+	struct Resource treesource;
+	InitResource( &treesource, LoadSpriteSheet("../art/2D Circle Graphic Archive/TREE.GIF", 0x1), 1, &treeanim );
+	Sprite tree;
+	InitSprite( &tree, &treesource, 10, 1000 );
+	AddSprite( &game, &tree, cpv( 50, 150 ));
 #endif
 
 	/* push the first render event onto the queue */
