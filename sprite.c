@@ -32,15 +32,11 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, c
 	sprite->control = cpBodyNew( INFINITY, INFINITY );
 	sprite->body = cpBodyNew( mass, INFINITY );
 	sprite->shape = cpCircleShapeNew( sprite->body, radius, cpvzero );
-	//cpShapeSetElasticity(sprite->shape, 0.0f);
-	sprite->shape->e = SPRITE_ELASTICITY;
-	//cpShapeSetFriction(sprite->shape, 0.7f);
-	sprite->shape->u = SPRITE_FRICTION;
+	cpShapeSetElasticity(sprite->shape, SPRITE_ELASTICITY);
+	cpShapeSetFriction(sprite->shape, SPRITE_FRICTION);
 	sprite->pivot = cpPivotJointNew2(sprite->control, sprite->body, cpvzero, cpvzero);
-	//cpConstraintSetMaxBias(sprite->pivot, 0); // disable joint correction
-	sprite->pivot->maxBias = 0;
-	//cpConstraintSetMaxForce(sprite->pivot, 10000.0f); // emulate linear friction
-	sprite->pivot->maxForce = SPRITE_MAX_CONTROL_FORCE;
+	cpConstraintSetMaxBias(sprite->pivot, 0); // disable joint correction
+	cpConstraintSetMaxForce(sprite->pivot, SPRITE_MAX_CONTROL_FORCE); // emulate linear friction
 
 	for( size_t i=0; i < NUM_ATTR; i++ ) {
 		sprite->attributes[i] = 0;

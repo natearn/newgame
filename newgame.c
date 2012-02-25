@@ -8,7 +8,7 @@
 #include "sprite.h"
 #include "gamestate.h"
 
-/* XXX: sleep granularity is 10ms, but calculations are down with 1ms */
+/* XXX: sleep granularity is 10ms, but calculations are down at 1ms */
 #define MAX_WAIT_TIME 33 /* maximum ms delay between redraws */
 #define MIN_WAIT_TIME 10 /* minimum ms delay between redraws */
 #define SIM_DELTA 50 /* ms per simulation update */
@@ -25,27 +25,46 @@ Uint32 FormatColour( SDL_PixelFormat *fmt, Uint32 colour ) {
 /* create a display-ready SDL_Sufrace* from image file, "colour" is a colour value which is made transparent (for sprite sheets) */
 SDL_Surface *LoadSpriteSheet( const char *file, Uint32 colour ) {
 	assert( file );
-	SDL_Surface *sprites = NULL;
-	SDL_Surface *format = NULL;
+	SDL_Surface *pre = NULL;
+	SDL_Surface *post = NULL;
 	/* load the file */
-	if( !(sprites = IMG_Load( file ))) {
-		goto lss_error;
+	if( !(pre = IMG_Load( file ))) {
+		fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
+		return NULL; /* failure */
 	}
 	/* set transparency key */
-	if( SDL_SetColorKey( sprites, SDL_SRCCOLORKEY | SDL_RLEACCEL, FormatColour( sprites->format, colour )) ) {
-		goto post_sprites;
+	if( SDL_SetColorKey( pre, SDL_SRCCOLORKEY | SDL_RLEACCEL, FormatColour( pre->format, colour )) ) {
+		SDL_FreeSurface( pre );
+		fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
+		return NULL; /* failure */
 	}
 	/* make it display-ready */
-	if( !(format = SDL_DisplayFormat( sprites ))) {
-		goto post_sprites;
+	if( !(post = SDL_DisplayFormat( pre ))) {
+		SDL_FreeSurface( pre );
+		fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
+		return NULL; /* failure */
 	}
-	SDL_FreeSurface( sprites );
-	return format; /* success */
-post_sprites:
-	SDL_FreeSurface( sprites );
-lss_error:
-	fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
-	return NULL; /* failure */
+	SDL_FreeSurface( pre );
+	return post; /* success */
+}
+
+SDL_Surface *LoadSpriteSheetAlpha( const char *file ) {
+	assert( file );
+	SDL_Surface *pre = NULL;
+	SDL_Surface *post = NULL;
+	/* load the file */
+	if( !(pre = IMG_Load( file ))) {
+		fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
+		return NULL; /* failure */
+	}
+	/* make it display-ready */
+	if( !(post = SDL_DisplayFormat( pre ))) {
+		SDL_FreeSurface( pre );
+		fprintf(stderr,"LoadSpriteSheet failed: %s\n",SDL_GetError());
+		return NULL; /* failure */
+	}
+	SDL_FreeSurface( pre );
+	return post; /* success */
 }
 
 /* push a generic user event onto the SDL event queue with given code (unused) */
@@ -98,7 +117,7 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 	return target - delay;
 }
 
-/* FIXME: this is really gross, but it works */
+/* XXX: this is really gross, but it works */
 void HandleInput( unsigned int keys[], struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
 	int x, y;
