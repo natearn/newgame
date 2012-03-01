@@ -320,9 +320,9 @@ int main( int argc, char *argv[] ) {
 	SDL_WM_SetCaption( "newgame", NULL );
 
 	/* initialize game data */
-#if 1
-	/* this sample is a rpg sprite walking around */
 	InitGameState( &game );
+#if 0
+	/* this sample is a rpg sprite walking around */
 
 	SDL_Rect frames[] = {
 	                      /* left */
@@ -392,9 +392,12 @@ int main( int argc, char *argv[] ) {
 	InitAnimation( &treeanim, 1, &treeframe, 0, 0 );
 	struct Resource treesource;
 	InitResource( &treesource, LoadSpriteSheet("../art/2D Circle Graphic Archive/TREE.GIF", 0x1), 1, &treeanim );
+	//cpShape *treeshape = cpSpaceAddNewshape( game.space, cpNewShape( ) );
+#if 0
 	Sprite tree;
 	InitSprite( &tree, &treesource, 10, 1000 );
 	AddSprite( &game, &tree, cpv( 50, 150 ));
+#endif
 #endif
 
 	/* push the first render event onto the queue */

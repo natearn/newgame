@@ -8,6 +8,7 @@ struct GameState *InitGameState( struct GameState* game ) {
 	assert( game );
 	game->space = cpSpaceNew();
 	game->sprites = NULL;
+	game->time = 0;
 	game->view_width = VIEW_WIDTH;
 	game->view_height = VIEW_HEIGHT;
 	return game;
@@ -15,16 +16,26 @@ struct GameState *InitGameState( struct GameState* game ) {
 
 Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta ) {
 	assert( game && game->space );
-	Uint32 rem = time;
-	while( rem > delta ) {
+	struct SpriteList *list = NULL;
+	game->time += time;
+	while( game->time > delta ) {
 		cpSpaceStep( game->space, delta/1000.0 );
-		rem -= delta;
+		game->time -= delta;
 	}
-	return rem;
+	/* TODO: update render information on sprites */
+#if 0
+	for(list = game->sprites; list; list = list->next) {
+		if( UpdateSprite( list->sprite, screen, screen_posn, delta )) {
+			return -1;
+		}
+	}
+#endif
+	return game->time;
 }
 
 void UpdateGameStateFull( struct GameState *game, Uint32 time, Uint32 delta ) {
-	cpSpaceStep( game->space, UpdateGameState(game,time,delta)/1000.0 );
+	Uint32 rem = UpdateGameState(game,time,delta);
+	UpdateGameState(game,0,rem); /* simulate the remainder */
 }
 
 static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite ) {
@@ -52,16 +63,20 @@ int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
+
+	/* calc screen position */
 	cpVect offset = cpv( (game->view_width / 2) * -1.0, (game->view_height / 2) * -1.0 );
-	/* TODO: replace hard-coded offset */
 	cpVect screen_posn = cpvadd( cpBodyGetPos(game->focus->body), offset );
+
 	/* render the map */
-	SDL_FillRect( screen, NULL, 0x0 ); /* temporary: fill screen black */
+	SDL_FillRect( screen, NULL, 0x0 ); /* until there is map, just fill black */
+
 	/* render the sprites */
 	for(list = game->sprites; list; list = list->next) {
 		if( DrawSprite( list->sprite, screen, screen_posn, delta )) {
 			return -1;
 		}
 	}
+
 	return 0;
 }

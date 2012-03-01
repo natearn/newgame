@@ -58,12 +58,6 @@ typedef struct {
 	Uint32 time;                          /* remaining time to animate (this should always be less than the current animation interval) */
 } Sprite;
 
-/* linked list of sprites */
-typedef struct SpriteList {
-	Sprite *sprite;
-	struct SpriteList *next;
-} SpriteList;
-
 /* initialize a sprite (body and shape are added to chipmunk space) */
 /* TODO: more physical attibutes should be parameters */
 Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, cpFloat mass );
