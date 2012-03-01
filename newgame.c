@@ -321,7 +321,7 @@ int main( int argc, char *argv[] ) {
 
 	/* initialize game data */
 	InitGameState( &game );
-#if 0
+#if 1
 	/* this sample is a rpg sprite walking around */
 
 	SDL_Rect frames[] = {
@@ -382,10 +382,11 @@ int main( int argc, char *argv[] ) {
 	npc.table[FACE_DOWN][MOVE_WALK] = &anims[3];
 	npc.table[FACE_DOWN][MOVE_IDLE] = &anims[3+4];
 
-	AddSprite( &game, &player, cpv( 50, 50 ));
-	AddSprite( &game, &npc, cpv( 150, 50 ));
+	GameAddSprite( &game, &player, cpv( 50, 50 ));
+	GameAddSprite( &game, &npc, cpv( 150, 50 ));
 	game.focus = &player;
 
+#if 0
 	/* make a tree */
 	SDL_Rect treeframe = { .x=124, .y=0, .w=74, .h=112 };
 	Animation treeanim;
@@ -393,7 +394,6 @@ int main( int argc, char *argv[] ) {
 	struct Resource treesource;
 	InitResource( &treesource, LoadSpriteSheet("../art/2D Circle Graphic Archive/TREE.GIF", 0x1), 1, &treeanim );
 	//cpShape *treeshape = cpSpaceAddNewshape( game.space, cpNewShape( ) );
-#if 0
 	Sprite tree;
 	InitSprite( &tree, &treesource, 10, 1000 );
 	AddSprite( &game, &tree, cpv( 50, 150 ));

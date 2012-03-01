@@ -16,7 +16,7 @@ struct GameState *InitGameState( struct GameState* game ) {
 
 Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta ) {
 	assert( game && game->space );
-	struct SpriteList *list = NULL;
+	//struct SpriteList *list = NULL;
 	game->time += time;
 	while( game->time > delta ) {
 		cpSpaceStep( game->space, delta/1000.0 );
@@ -50,7 +50,7 @@ static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite )
 	return elem;
 }
 
-int AddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
+int GameAddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
 	if(!InsertSprite( game, sprite )) return -1;
 	cpBodySetPos( GetSpriteBody(sprite), posn );
 	cpSpaceAddBody( game->space, GetSpriteBody(sprite) );
