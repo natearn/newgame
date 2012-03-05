@@ -1,5 +1,6 @@
 newgame
 tags
 *.o
+TODO
 *.png
 .redo/

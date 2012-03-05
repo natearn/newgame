@@ -17,13 +17,19 @@ Animation *CreateAnimation( size_t length, SDL_Rect* frames, size_t reset, Uint3
 Animation *InitAnimation( Animation *anim, size_t length, SDL_Rect* frames, size_t reset, Uint32 interval );
 
 /* free the animation frames array */
+void DestroyAnimation( Animation *anim );
 void FreeAnimation( Animation *anim );
 
-/* get the next frame in the animation */
-SDL_Rect *GetNextFrame( Animation *anim, size_t *index );
+/* updates index to be the next frame in the animation. returns the index value as well */
+size_t AnimationNextFrame( const Animation *anim, size_t *index );
 
-/* get the updated frame in the animation based on the time difference */
-SDL_Rect *GetUpdatedFrame( Animation *anim, size_t *index, Uint32 *time );
+/* runs the animation for up to time (ms). The function consumes time in
+   anim->interval sized chunks, updating the index for each chunk consumed.
+   Returns any remaining time that cannot be consumed.
+*/
+Uint32 UpdateAnimation( const Animation *anim, size_t *index, const Uint32 time );
+
+/* returns the animation frame at the given index */
+SDL_Rect *GetAnimationFrame( const Animation *anim, const size_t index );
 
 #endif /* _ANIMATION_H_ */
-

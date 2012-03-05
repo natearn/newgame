@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "SDL.h"
-#include "SDL_image.h"
-#include "chipmunk/chipmunk.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_framerate.h>
+#include <chipmunk/chipmunk.h>
 #include "animation.h"
 #include "sprite.h"
 #include "gamestate.h"
@@ -96,9 +97,9 @@ Uint32 PushRender( Uint32 interval, void *param ) {
 }
 
 /* Renders the game state, then flips the screen. */
-int Render( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
+int Render( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
-	if( RenderGameState( game, screen, delta )) {
+	if( RenderGameState( game, screen )) {
 		return -1;
 	}
 	if( SDL_Flip(screen) ) {
@@ -118,6 +119,7 @@ Uint32 CalcWaitTime( Uint32 target, Uint32 delay, Uint32 min ) {
 }
 
 /* XXX: this is really gross, but it works */
+#if 0
 void HandleInput( unsigned int keys[], struct GameState *game, SDL_Event *event ) {
 	assert( event->type == SDL_KEYDOWN || event->type == SDL_KEYUP );
 	int x, y;
@@ -208,6 +210,7 @@ void HandleInput( unsigned int keys[], struct GameState *game, SDL_Event *event 
 			break;
 	}
 }
+#endif
 
 /* EventHandler
 	This routine runs the event manager, which waits for events in the event
@@ -220,7 +223,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 	SDL_TimerID render_id;
 	Uint32 lastTime = SDL_GetTicks(), thisTime = 0, renderTime = 0, frameTime = 0;
 	unsigned int frames = 0;
-	unsigned int keys[] = {0,0,0,0};
+	//unsigned int keys[] = {0,0,0,0};
 
     while( SDL_WaitEvent( &event ) ) {
 		switch( event.type ) {
@@ -233,7 +236,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 						frameTime = ((frameTime*frames)+(thisTime-lastTime))/(frames+1);
 						/* simulating the remainder right away instead of saving it */
 						UpdateGameStateFull( game, thisTime - lastTime, SIM_DELTA );
-						if( Render( game, screen, thisTime - lastTime ) ) {
+						if( Render( game, screen ) ) {
 							exit(EXIT_FAILURE);
 						}
 						/* add new timer with calculated wait time */
@@ -258,7 +261,7 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 			/* currently keyboard only */
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				HandleInput( keys, game, &event );
+				//HandleInput( keys, game, &event );
 				break;
 
 			/* other events */
@@ -360,7 +363,44 @@ int main( int argc, char *argv[] ) {
 
 	struct Resource spritesheet;
 	InitResource( &spritesheet, LoadSpriteSheet( "../art/rpgsprites/charsets1.png", 0x7bd5fe ), 4, anims );
-	Sprite player, npc;
+	struct Sprite player, npc;
+	{
+		cpShape *shape;
+		cpConstraint *anchor;
+		player.resource = &spritesheet;
+		player.time = 0;
+		player.animation = player.resource->animations;
+		player.index = 0;
+		player.control = cpBodyNew( INFINITY, INFINITY );
+		player.body = cpBodyNew( 10.0, INFINITY );
+		shape = cpCircleShapeNew( player.body, 10, cpvzero );
+		cpShapeSetElasticity(shape, 0.0f);
+		cpShapeSetFriction(shape, 0.7f);
+		anchor = cpPivotJointNew2(player.control, player.body, cpvzero, cpvzero);
+		cpConstraintSetMaxBias(anchor, 0); // disable joint correction
+		cpConstraintSetMaxForce(anchor, 100000.0f); // emulate linear friction
+		cpBodySetUserData(player.body, &player);
+		cpBodySetUserData(player.control, &player);
+		GameAddSprite( &game, &player, cpv( 50, 50 ));
+		game.focus = &player;
+
+		npc.resource = &spritesheet;
+		npc.time = 0;
+		npc.animation = npc.resource->animations+3;
+		npc.index = 0;
+		npc.control = cpBodyNew( INFINITY, INFINITY );
+		npc.body = cpBodyNew( 10.0, INFINITY );
+		shape = cpCircleShapeNew( npc.body, 10, cpvzero );
+		cpShapeSetElasticity(shape, 0.0f);
+		cpShapeSetFriction(shape, 0.7f);
+		anchor = cpPivotJointNew2(npc.control, npc.body, cpvzero, cpvzero);
+		cpConstraintSetMaxBias(anchor, 0); // disable joint correction
+		cpConstraintSetMaxForce(anchor, 100000.0f); // emulate linear friction
+		cpBodySetUserData(npc.body, &npc);
+		cpBodySetUserData(npc.control, &npc);
+		GameAddSprite( &game, &npc, cpv( 150, 50 ));
+	}
+#if 0
 	InitSprite( &player, &spritesheet, 10, 10 );
 	InitSprite( &npc, &spritesheet, 10, 10 );
 	/* assign animations to attirbute combinations */
@@ -381,10 +421,24 @@ int main( int argc, char *argv[] ) {
 	npc.table[FACE_UP][MOVE_IDLE] = &anims[2+4];
 	npc.table[FACE_DOWN][MOVE_WALK] = &anims[3];
 	npc.table[FACE_DOWN][MOVE_IDLE] = &anims[3+4];
+#endif
 
-	GameAddSprite( &game, &player, cpv( 50, 50 ));
-	GameAddSprite( &game, &npc, cpv( 150, 50 ));
-	game.focus = &player;
+
+	/* this is what it takes to make a static sprite with no body */
+	SDL_Rect bgframe = {0,0,512,512};
+	Animation bganim;
+	InitAnimation( &bganim, 1, &bgframe, 0, 0 );
+	struct Resource bgresource;
+	InitResource( &bgresource, LoadSpriteSheetAlpha( "../art/grass00_0.png" ), 1, &bganim );
+	struct Sprite bg = {
+		.control = NULL,
+		.body = cpSpaceGetStaticBody( game.space ),
+		.resource = &bgresource,
+		.animation = &bgresource.animations[0],
+		.index = 0,
+		.time = 0,
+	};
+	GameAddSprite( &game, &bg, cpvzero );
 
 #if 0
 	/* make a tree */

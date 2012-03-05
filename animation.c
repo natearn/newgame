@@ -4,17 +4,6 @@
 #include <string.h>
 #include "animation.h"
 
-/* allocate and initialize an animation */
-Animation *CreateAnimation( size_t length, SDL_Rect* frames, size_t reset, Uint32 interval ) {
-	Animation *ret;
-	if( !(ret = malloc(sizeof(*ret))) ) {
-		fprintf(stderr,"Animation: CreateAnimation: malloc failed\n");
-		return NULL;
-	}
-	return InitAnimation( ret, length, frames, reset, interval );
-}
-
-/* initialize a preallocted animation */
 Animation *InitAnimation( Animation *anim, size_t length, SDL_Rect* frames, size_t reset, Uint32 interval ) {
 	assert(anim && frames);
 	anim->length = length;
@@ -28,32 +17,47 @@ Animation *InitAnimation( Animation *anim, size_t length, SDL_Rect* frames, size
 	return anim;
 }
 
-void FreeAnimation( Animation* anim ) {
+Animation *CreateAnimation( size_t length, SDL_Rect* frames, size_t reset, Uint32 interval ) {
+	Animation *ret;
+	if( !(ret = malloc(sizeof(*ret))) ) {
+		fprintf(stderr,"Animation: CreateAnimation: malloc failed\n");
+		return NULL;
+	}
+	return InitAnimation( ret, length, frames, reset, interval );
+}
+
+void DestroyAnimation( Animation* anim ) {
 	assert( anim && anim->frames );
 	free( anim->frames );
+}
+
+void FreeAnimation( Animation* anim ) {
+	DestroyAnimation( anim );
 	free( anim );
 }
 
-SDL_Rect *GetNextFrame( Animation *anim, size_t *index ) {
+size_t AnimationNextFrame( const Animation *anim, size_t *index ) {
 	assert(anim);
-	assert(anim->reset < anim->length);
-	size_t idx = *index;
-	idx += 1;
-	if(idx >= anim->length) {
-		idx = anim->reset;
+	*index += 1;
+	if(*index >= anim->length) {
+		*index = anim->reset;
 	}
-	assert(idx < anim->length);
-	*index = idx;
-	return &anim->frames[idx];
+	return *index;
 }
 
-SDL_Rect *GetUpdatedFrame( Animation *anim, size_t *index, Uint32 *time ) {
+Uint32 UpdateAnimation( const Animation *anim, size_t *index, const Uint32 time ) {
 	assert(anim);
+	Uint32 rem = 0;
 	if( anim->interval > 0 ) {
-		for(; *time > anim->interval; *time -= anim->interval) {
-			GetNextFrame( anim, index );
+		for( rem = time; rem > anim->interval; rem -= anim->interval) {
+			*index = AnimationNextFrame( anim, index );
 		}
 	}
-	return &anim->frames[*index];
+	return rem;
 }
 
+SDL_Rect *GetAnimationFrame( const Animation *anim, const size_t index ) {
+	assert( anim );
+	assert( index < anim->length );
+	return &anim->frames[index];
+}

@@ -16,20 +16,16 @@ struct GameState *InitGameState( struct GameState* game ) {
 
 Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta ) {
 	assert( game && game->space );
-	//struct SpriteList *list = NULL;
+	struct SpriteList *list = NULL;
 	game->time += time;
 	while( game->time > delta ) {
 		cpSpaceStep( game->space, delta/1000.0 );
 		game->time -= delta;
 	}
 	/* TODO: update render information on sprites */
-#if 0
 	for(list = game->sprites; list; list = list->next) {
-		if( UpdateSprite( list->sprite, screen, screen_posn, delta )) {
-			return -1;
-		}
+		UpdateSprite( list->sprite, time );
 	}
-#endif
 	return game->time;
 }
 
@@ -38,7 +34,7 @@ void UpdateGameStateFull( struct GameState *game, Uint32 time, Uint32 delta ) {
 	UpdateGameState(game,0,rem); /* simulate the remainder */
 }
 
-static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite ) {
+static struct SpriteList *InsertSprite( struct GameState *game, struct Sprite *sprite ) {
 	struct SpriteList *elem = NULL;
 	if(!(elem = malloc(sizeof(*elem)))) {
 		fprintf(stderr,"GameState: InsertSprite: malloc failed\n");
@@ -50,17 +46,25 @@ static struct SpriteList *InsertSprite( struct GameState *game, Sprite *sprite )
 	return elem;
 }
 
-int GameAddSprite( struct GameState *game, Sprite *sprite, cpVect posn ) {
+static void AddShape( cpBody *body, cpShape *shape, void *data ) {
+	cpSpaceAddShape( (cpSpace*)data, shape );
+	(void)body;
+}
+static void AddConstraint( cpBody *body, cpConstraint *constraint, void *data ) {
+	cpSpaceAddConstraint( (cpSpace*)data, constraint );
+	(void)body;
+}
+
+int GameAddSprite( struct GameState *game, struct Sprite *sprite, cpVect posn ) {
 	if(!InsertSprite( game, sprite )) return -1;
-	cpBodySetPos( GetSpriteBody(sprite), posn );
-	cpSpaceAddBody( game->space, GetSpriteBody(sprite) );
-	cpSpaceAddShape( game->space, GetSpriteShape(sprite) );
-	cpSpaceAddConstraint( game->space, sprite->pivot );
-	sprite->space = game->space;
+	cpBodySetPos( sprite->body, posn );
+	if(!cpBodyIsStatic(sprite->body)) cpSpaceAddBody( game->space, sprite->body );
+	cpBodyEachShape(sprite->body, AddShape, game->space);
+	cpBodyEachConstraint(sprite->body, AddConstraint, game->space);
 	return 0;
 }
 
-int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta ) {
+int RenderGameState( struct GameState *game, SDL_Surface *screen ) {
 	assert( game && screen );
 	struct SpriteList *list = NULL;
 
@@ -73,7 +77,7 @@ int RenderGameState( struct GameState *game, SDL_Surface *screen, Uint32 delta )
 
 	/* render the sprites */
 	for(list = game->sprites; list; list = list->next) {
-		if( DrawSprite( list->sprite, screen, screen_posn, delta )) {
+		if( RenderSprite( list->sprite, screen, screen_posn )) {
 			return -1;
 		}
 	}

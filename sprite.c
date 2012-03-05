@@ -9,6 +9,35 @@
 
 #define Vect2Rect( vect ) (SDL_Rect){ .x = (vect).x, .y = (vect).y, .w = 0, .h = 0 }
 
+Uint32 UpdateSprite( struct Sprite *sprite, Uint32 time ) {
+	assert(sprite);
+	sprite->time += time;
+	sprite->time = UpdateAnimation( sprite->animation, &sprite->index, sprite->time );
+	return sprite->time;
+}
+
+int RenderSprite( struct Sprite *sprite, SDL_Surface *screen, cpVect screen_posn ) {
+	assert(sprite && screen);
+	SDL_Rect *frame = NULL;
+	SDL_Rect posn = {0,0,0,0};
+
+	frame = GetAnimationFrame( sprite->animation, sprite->index );
+
+	/* get the sprite screen position */
+	posn = Vect2Rect( cpvsub( cpBodyGetPos(sprite->body), screen_posn ));
+	/* pin frame bottom-middle to body center */
+	posn.y -= frame->h;
+	posn.x -= frame->w/2;
+
+	/* blit */
+	if( SDL_BlitSurface( sprite->resource->surface, frame, screen, &posn )) {
+		fprintf(stderr,"DrawSprite: error from SDL_BlitSurface\n");
+		return -1;
+	}
+	return 0;
+}
+
+#if 0
 /* TODO: make radius, mass, elasticity, and friction parameters, bias and force should be constants */
 Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, cpFloat mass ) {
 	assert(sprite && resource );
@@ -139,3 +168,4 @@ void SpriteStopMoving( Sprite *sprite ) {
 	sprite->attributes[ATTR_MOVE] = MOVE_IDLE;
 	cpBodySetVel( sprite->control, cpvzero );
 }
+#endif

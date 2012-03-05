@@ -36,13 +36,16 @@ typedef unsigned int Direction;
 #define ATTR_MOVE  1
 #define NUM_ATTR   2
 
-/* Sprite */
-typedef struct {
-	/* physics data */
+struct Sprite {
+	cpBody *body;               /* physical body of the sprite (don't do anything to this after it has been added) */
+	cpBody *control;            /* controls the body by dragging it */
+	struct Resource *resource;  /* animation resource structure */
+	Animation *animation;       /* current animation */
+	size_t index;               /* current frame index */
+	Uint32 time;                /* remaining time to animate (this should always be less than the current animation interval) */
+#if 0
+	cpShape *shape;      /* circle shape */
 	cpSpace *space;      /* need access to space in order to add sensor shapes */
-	cpBody *control;     /* controls the body by dragging it */
-	cpBody *body;        /* physical body of the sprite */
-	cpShape *shape;      /* box shape */
 	cpConstraint *pivot; /* connection between control and body */
 
 	/* game data */
@@ -50,14 +53,14 @@ typedef struct {
 	Direction facing;
 	Direction moving;
 	
-	/* animation data */
 	Animation *table[NUM_FACE][NUM_MOVE]; /* look-up table */
-	struct Resource *resource;            /* animation resource structure */
-	Animation *animation;                 /* current animation */
-	size_t index;                         /* current frame index */
-	Uint32 time;                          /* remaining time to animate (this should always be less than the current animation interval) */
-} Sprite;
+#endif
+};
 
+Uint32 UpdateSprite( struct Sprite *sprite, Uint32 time );
+int RenderSprite( struct Sprite *sprite, SDL_Surface *screen, cpVect screen_posn );
+
+#if 0
 /* initialize a sprite (body and shape are added to chipmunk space) */
 /* TODO: more physical attibutes should be parameters */
 Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, cpFloat mass );
@@ -66,6 +69,7 @@ Sprite *InitSprite( Sprite *sprite, struct Resource *resource, cpFloat radius, c
 Sprite *CreateSprite( struct Resource *resource, cpFloat radius, cpFloat mass );
 
 /* deallocate a sprite */
+//void DestroySprite( Sprite *sprite );
 void FreeSprite( Sprite *sprite );
 
 /* draw the sprite on the surface */
@@ -79,5 +83,6 @@ cpConstraint *GetSpritePivot( Sprite *sprite );
 /* sprite actions: */
 void SpriteStartWalking( Sprite *sprite, Direction direction );
 void SpriteStopMoving( Sprite *sprite );
+#endif
 
 #endif /* _SPRITE_H_ */
