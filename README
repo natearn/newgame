@@ -1,0 +1,9 @@
+newgame is an effort to make a light-weight game engine for 2D action-RPG games.
+
+dependencies:
+	-libsdl1.2
+	-SDL_image
+	-SDL_gfx
+	-Chipmunk
+
+I originally started this project to experiment with sprite animation, and so far that's the only part of the project that's in a decent state.
