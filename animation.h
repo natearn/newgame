@@ -2,7 +2,7 @@
 #define _ANIMATION_H_
 #include <SDL/SDL.h>
 
-/* an animation */
+/* describes a sprite animation */
 typedef struct {
 	SDL_Rect *frames;      /* frames array */
 	size_t length;         /* number of frames in animation */
@@ -10,7 +10,10 @@ typedef struct {
 	Uint32 interval;       /* interval of index incrementation (for automatic animations)*/
 } Animation;
 
-/* Create an animation, length must be equal to the size of the frames array */
+/* Create an animation.
+	Frames array must contain at least 1 frame. Length must be equal to the size
+	of the frames array.
+*/
 Animation *CreateAnimation( size_t length, SDL_Rect* frames, size_t reset, Uint32 interval );
 
 /* Initialize an existing animation, length must be equal to the size of the frames array */
