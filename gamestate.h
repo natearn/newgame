@@ -33,8 +33,9 @@ Uint32 UpdateGameState( struct GameState *game, Uint32 time, Uint32 delta );
 void UpdateGameStateFull( struct GameState *game, Uint32 time, Uint32 delta );
 int RenderGameState( struct GameState *game, SDL_Surface *screen );
 int GameAddSprite( struct GameState *game, struct Sprite *sprite, cpVect posn );
-#if 0
-/* serialization of game data to human-readable text files */
+
+#if 0 /* TODO: */
+/* serialization of game state to human-readable save files */
 GameState *LoadGame( GameState* game, const char* file );
 int SaveGame( GameState* game, const char* file );
 #endif

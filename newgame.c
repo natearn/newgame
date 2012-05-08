@@ -9,7 +9,7 @@
 #include "sprite.h"
 #include "gamestate.h"
 
-/* XXX: sleep granularity is 10ms, but calculations are down at 1ms */
+/* XXX: sleep granularity is 10ms, but calculations are done at 1ms */
 #define MAX_WAIT_TIME 33 /* maximum ms delay between redraws */
 #define MIN_WAIT_TIME 10 /* minimum ms delay between redraws */
 #define SIM_DELTA 50 /* ms per simulation update */
@@ -49,6 +49,7 @@ SDL_Surface *LoadSpriteSheet( const char *file, Uint32 colour ) {
 	return post; /* success */
 }
 
+/* create a display-ready SDL_Sufrace* from image file that uses alpha for background instead of a solid colour */
 SDL_Surface *LoadSpriteSheetAlpha( const char *file ) {
 	assert( file );
 	SDL_Surface *pre = NULL;
@@ -68,7 +69,10 @@ SDL_Surface *LoadSpriteSheetAlpha( const char *file ) {
 	return post; /* success */
 }
 
-/* push a generic user event onto the SDL event queue with given code (unused) */
+/* push a generic user event onto the SDL event queue with given code 
+   - this is written to be usable as a callback for SDL_AddTimer
+   - maybe not thread-safe, use with caution
+*/
 Uint32 PushUserEvent( Uint32 interval, void *param ) {
 	int code = (int)param;
 	SDL_Event event;
@@ -266,30 +270,18 @@ int EventHandler( struct GameState *game, SDL_Surface *screen ) {
 
 			/* other events */
 			case SDL_QUIT:
-				/* autosave state here if desired */
+				/* reminder: autosave state here if desired */
 				fprintf(stderr,"SDL_QUIT\n");
 				return 0;
 			case SDL_VIDEORESIZE:
 				/* not being handled yet */
 				fprintf(stderr,"SDL_VIDEORESIZE\n");
 				break;
-			case SDL_VIDEOEXPOSE:
-				/* not being handled yet */
-				fprintf(stderr,"SDL_VIDEOEXPOSE\n");
-				break;
-			case SDL_SYSWMEVENT:
-				/* not being handled yet */
-				fprintf(stderr,"SDL_SYSWMEVENT\n");
-				break;
-			case SDL_ACTIVEEVENT:
-				/* not being handled yet */
-				/* this one happens a lot */
-				break;
 			default:
 				break;
 		}
 	}
-	fprintf(stderr,"EventHandler error: stopping without quit event\n");
+	fprintf(stderr,"EventHandler error: stopping without quit event (should never happen)\n");
 	return -1;
 }
 
@@ -303,7 +295,7 @@ int main( int argc, char *argv[] ) {
 	(void)argc;
 	(void)argv;
 
-	/* Initialize TODO: init only the modules that I use */
+	/* Initialize TODO: init only the modules that are used */
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
 	cpInitChipmunk();
